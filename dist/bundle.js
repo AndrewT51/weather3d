@@ -19743,6 +19743,20 @@
 	  displayName: 'AppWindow',
 
 	  render: function render() {
+	    function jsonp(url, callback) {
+	      var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+	      window[callbackName] = function (data) {
+	        delete window[callbackName];
+	        document.body.removeChild(script);
+	        callback(data);
+	      };
+	      var script = document.createElement('script');
+	      script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+	      document.body.appendChild(script);
+	    }
+	    jsonp('http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json', function (data) {
+	      console.log(data);
+	    });
 	    return React.createElement(
 	      'div',
 	      { className: 'app-window' },
