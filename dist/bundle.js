@@ -19754,7 +19754,7 @@
 	      script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
 	      document.body.appendChild(script);
 	    }
-	    jsonp('http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json', function (data) {
+	    jsonp('http://dfgfapi.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json', function (data) {
 	      console.log(data);
 	    });
 	    return React.createElement(
@@ -19808,17 +19808,17 @@
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      { className: 'center' },
+	      { className: 'input-group col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3' },
 	      React.createElement(
-	        'div',
-	        { className: 'col-xs-4' },
-	        React.createElement('input', { className: 'form-control input', placeholder: 'current location' })
+	        'span',
+	        { className: 'input-group-btn' },
+	        React.createElement(
+	          'button',
+	          { className: 'btn btn-default', type: 'button' },
+	          'Get forecast'
+	        )
 	      ),
-	      React.createElement(
-	        'button',
-	        { className: 'btn btn-default' },
-	        'Forecast'
-	      )
+	      React.createElement('input', { type: 'text', className: 'form-control', placeholder: 'Current location' })
 	    );
 	  }
 	});
@@ -19868,7 +19868,7 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      sides: ['front', 'back', 'right', 'left', 'top', 'bottom']
+	      sides: ['front', 'back', 'right', 'left', 'top']
 	    };
 	  },
 	  render: function render() {
@@ -19879,8 +19879,7 @@
 	      React.createElement(Face, { side: this.state.sides[1] }),
 	      React.createElement(Face, { side: this.state.sides[2] }),
 	      React.createElement(Face, { side: this.state.sides[3] }),
-	      React.createElement(Face, { side: this.state.sides[4] }),
-	      React.createElement(Face, { side: this.state.sides[5] })
+	      React.createElement(Face, { side: this.state.sides[4] })
 	    );
 	  }
 	});

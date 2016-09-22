@@ -5,7 +5,7 @@ var Face = require('./Face')
 var Cube = React.createClass({
   getInitialState: function(){
     return {
-      sides: ['front','back','right', 'left','top','bottom']
+      sides: ['front','back','right', 'left','top']
     }
   },
   render: function(){
@@ -16,7 +16,6 @@ var Cube = React.createClass({
         <Face side={this.state.sides[2]}/>
         <Face side={this.state.sides[3]}/>
         <Face side={this.state.sides[4]}/>
-        <Face side={this.state.sides[5]}/>
       </div>
     )
   }

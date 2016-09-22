@@ -18,7 +18,7 @@ var AppWindow = React.createClass({
         script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
         document.body.appendChild(script);
     }
-    jsonp('http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json'
+    jsonp('http://dfgfapi.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json'
 , function(data) {
        console.log(data);
     });
