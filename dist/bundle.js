@@ -19739,24 +19739,28 @@
 	var MenuBar = __webpack_require__(160);
 	var PerspectiveContext = __webpack_require__(162);
 
+	function jsonp(url, callback) {
+	  var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+	  window[callbackName] = function (data) {
+	    delete window[callbackName];
+	    document.body.removeChild(script);
+	    callback(data);
+	  };
+	  var script = document.createElement('script');
+	  script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+	  document.body.appendChild(script);
+	}
+
+	function handleApiResponse(data) {
+	  console.log(data);
+	}
+
 	var AppWindow = React.createClass({
 	  displayName: 'AppWindow',
 
 	  render: function render() {
-	    function jsonp(url, callback) {
-	      var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-	      window[callbackName] = function (data) {
-	        delete window[callbackName];
-	        document.body.removeChild(script);
-	        callback(data);
-	      };
-	      var script = document.createElement('script');
-	      script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
-	      document.body.appendChild(script);
-	    }
-	    jsonp('http://dfgfapi.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json', function (data) {
-	      console.log(data);
-	    });
+	    // var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json'
+	    // jsonp(url, handleApiResponse);
 	    return React.createElement(
 	      'div',
 	      { className: 'app-window' },
@@ -19805,6 +19809,20 @@
 	var InputLocation = React.createClass({
 	  displayName: 'InputLocation',
 
+	  getInitialState: function getInitialState() {
+	    return {
+	      value: ''
+	    };
+	  },
+	  handleChange: function handleChange(evt) {
+	    this.setState({
+	      value: evt.target.value
+	    });
+	  },
+	  handleClick: function handleClick(evt) {
+	    // TODO - pass this.state.value to API request
+	    this.setState({ value: '' });
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
@@ -19814,11 +19832,20 @@
 	        { className: 'input-group-btn' },
 	        React.createElement(
 	          'button',
-	          { className: 'btn btn-default', type: 'button' },
+	          {
+	            className: 'btn btn-default',
+	            onClick: this.handleClick,
+	            type: 'button' },
 	          'Get forecast'
 	        )
 	      ),
-	      React.createElement('input', { type: 'text', className: 'form-control', placeholder: 'Current location' })
+	      React.createElement('input', {
+	        type: 'text',
+	        value: this.state.value,
+	        onChange: this.handleChange,
+	        className: 'form-control',
+	        placeholder: 'Current location'
+	      })
 	    );
 	  }
 	});
