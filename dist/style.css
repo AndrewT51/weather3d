@@ -21,10 +21,15 @@ html, body {
   width: 100%;
   height: 10%;
   perspective: 900px;
-  perspective-origin: 70% 10%;
+  perspective-origin: 0% 100%;
+  animation: wobble 5s linear infinite alternate ;
 }
 
-
+@keyframes wobble {
+  0% {perspective-origin: 50% 100%;}
+  50% {perspective-origin: 30% 50%;}
+  100% {perspective-origin: 60% 60%;}
+}
 
 .cube, .flatscreen, .projection {
   box-sizing: border-box;
@@ -34,6 +39,17 @@ html, body {
   height:30vh;
   margin-top: 25vh;
   margin-left: 15vw;
+ 
+}
+
+.cube {
+  transform: rotateY(0deg);
+  transition: transform 2s;
+}
+
+.cube:hover {
+  transform: rotateY(-90deg);
+
 }
 
 .face {
