@@ -13,7 +13,10 @@ var InputLocation = React.createClass({
     })
   },
   handleClick: function(evt){
+    var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/'+ this.state.value +'.json'
     // TODO - pass this.state.value to API request
+    console.log(url)
+    this.props.logic.jsonp(url, this.props.logic.handleApiResponse);
     this.setState({value:''})
   },
   render: function(){

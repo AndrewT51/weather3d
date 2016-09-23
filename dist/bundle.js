@@ -19744,12 +19744,11 @@
 	  displayName: 'AppWindow',
 
 	  render: function render() {
-	    var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json';
-	    logic.jsonp(url, logic.handleApiResponse);
+
 	    return React.createElement(
 	      'div',
 	      { className: 'app-window' },
-	      React.createElement(MenuBar, null),
+	      React.createElement(MenuBar, { logic: logic }),
 	      React.createElement(PerspectiveContext, null)
 	    );
 	  }
@@ -19775,7 +19774,7 @@
 	    return React.createElement(
 	      'div',
 	      { className: 'menubar clearfix' },
-	      React.createElement(InputLocation, null)
+	      React.createElement(InputLocation, { logic: this.props.logic })
 	    );
 	  }
 	});
@@ -19805,7 +19804,10 @@
 	    });
 	  },
 	  handleClick: function handleClick(evt) {
+	    var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/' + this.state.value + '.json';
 	    // TODO - pass this.state.value to API request
+	    console.log(url);
+	    this.props.logic.jsonp(url, this.props.logic.handleApiResponse);
 	    this.setState({ value: '' });
 	  },
 	  render: function render() {

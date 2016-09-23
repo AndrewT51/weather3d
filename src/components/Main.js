@@ -6,11 +6,11 @@ var logic = require('../logic');
 
 var AppWindow = React.createClass({
   render: function(){
-    var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json'
-    logic.jsonp(url, logic.handleApiResponse);
+    
+    
     return (
       <div className="app-window">
-        <MenuBar />
+        <MenuBar logic={logic} />
         <PerspectiveContext />
       </div>
     )
