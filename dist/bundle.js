@@ -19738,29 +19738,14 @@
 	var ReactDOM = __webpack_require__(158);
 	var MenuBar = __webpack_require__(160);
 	var PerspectiveContext = __webpack_require__(162);
-
-	function jsonp(url, callback) {
-	  var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-	  window[callbackName] = function (data) {
-	    delete window[callbackName];
-	    document.body.removeChild(script);
-	    callback(data);
-	  };
-	  var script = document.createElement('script');
-	  script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
-	  document.body.appendChild(script);
-	}
-
-	function handleApiResponse(data) {
-	  console.log(data);
-	}
+	var logic = __webpack_require__(167);
 
 	var AppWindow = React.createClass({
 	  displayName: 'AppWindow',
 
 	  render: function render() {
-	    // var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json'
-	    // jsonp(url, handleApiResponse);
+	    var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/San_Francisco.json';
+	    logic.jsonp(url, logic.handleApiResponse);
 	    return React.createElement(
 	      'div',
 	      { className: 'app-window' },
@@ -19970,6 +19955,34 @@
 	});
 
 	module.exports = Projection;
+
+/***/ },
+/* 167 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var logic = {
+
+	    jsonp: function jsonp(url, callback) {
+	        var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+	        window[callbackName] = function (data) {
+	            delete window[callbackName];
+	            document.body.removeChild(script);
+	            callback(data);
+	        };
+	        var script = document.createElement('script');
+	        script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+	        document.body.appendChild(script);
+	    },
+
+	    handleApiResponse: function handleApiResponse(data) {
+	        console.log(data);
+	    }
+
+	};
+
+	module.exports = logic;
 
 /***/ }
 /******/ ]);
