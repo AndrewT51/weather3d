@@ -49,8 +49,9 @@
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
 	var WeatherApp = __webpack_require__(159);
+	var Constants = __webpack_require__(168);
 
-	ReactDOM.render(React.createElement(WeatherApp, null), document.getElementById('a'));
+	ReactDOM.render(React.createElement(WeatherApp, { constants: Constants }), document.getElementById('a'));
 
 /***/ },
 /* 1 */
@@ -19748,7 +19749,7 @@
 	    return React.createElement(
 	      'div',
 	      { className: 'app-window' },
-	      React.createElement(MenuBar, { logic: logic }),
+	      React.createElement(MenuBar, { logic: logic, constants: this.props.constants }),
 	      React.createElement(PerspectiveContext, null)
 	    );
 	  }
@@ -19774,7 +19775,10 @@
 	    return React.createElement(
 	      'div',
 	      { className: 'menubar clearfix' },
-	      React.createElement(InputLocation, { logic: this.props.logic })
+	      React.createElement(InputLocation, {
+	        logic: this.props.logic,
+	        constants: this.props.constants
+	      })
 	    );
 	  }
 	});
@@ -19804,10 +19808,15 @@
 	    });
 	  },
 	  handleClick: function handleClick(evt) {
-	    var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/' + this.state.value + '.json';
-	    // TODO - pass this.state.value to API request
-	    console.log(url);
-	    this.props.logic.jsonp(url, this.props.logic.handleApiResponse);
+	    // Format the input to separate city and country strings
+	    var location = this.props.logic.formatInput(this.state.value);
+	    // create url to request the autocompleted cities array
+	    var url1 = this.props.constants.urls.autoComplete(location.city, location.country);
+	    console.log('url1', url1);
+
+	    var location = this.props.logic.jsonp(url1, this.props.logic.getLocation, 'cb');
+
+	    // console.log(this.props.constants.urls.forecast10day(location))
 	    this.setState({ value: '' });
 	  },
 	  render: function render() {
@@ -19960,13 +19969,14 @@
 
 /***/ },
 /* 167 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
+	var Constants = __webpack_require__(168);
 	var logic = {
 
-	    jsonp: function jsonp(url, callback) {
+	    jsonp: function jsonp(url, callback, cbName) {
 	        var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
 	        window[callbackName] = function (data) {
 	            delete window[callbackName];
@@ -19974,17 +19984,89 @@
 	            callback(data);
 	        };
 	        var script = document.createElement('script');
-	        script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+	        script.src = url + (~url.indexOf('?') ? '&' : '?') + cbName + '=' + callbackName;
+
 	        document.body.appendChild(script);
 	    },
 
-	    handleApiResponse: function handleApiResponse(data) {
-	        console.log(data);
+	    getLocation: function getLocation(data) {
+	        var locationData = data && data.RESULTS && data.RESULTS[0];
+	        if (!locationData) {
+	            return;
+	        }
+	        var city = locationData.name.replace(/,.+/, '').replace(/ /, '_');
+	        console.log('City', city);
+	        var latLong = locationData.ll.replace(/ /, ',');
+	        var country = locationData.name.replace(/.+,/, '').trim().replace(/ /, '_') || locationData.c;
+	        console.log(locationData);
+	        console.log(city + ' ' + country);
+	        var location = country + '/' + city;
+	        if (country.toUpperCase() === 'US') {
+	            var url = Constants.urls.geoLookup(latLong);
+	            logic.jsonp(url, logic.getStateAcronym, 'callback');
+	        } else {
+	            logic.get10dayForecast(location);
+	        }
+	    },
+
+	    end: function end(data) {
+	        console.log('Data:', data);
+	    },
+
+	    get10dayForecast: function get10dayForecast(location) {
+	        var url = Constants.urls.forecast10day(location);
+	        console.log('URL: ', url);
+	        logic.jsonp(url, logic.end, 'callback');
+	    },
+
+	    getStateAcronym: function getStateAcronym(data) {
+	        var state = data.location.state;
+	        var location = state + '/' + data.location.city.replace(/ /, '_');
+	        logic.get10dayForecast(location);
+	    },
+
+	    formatInput: function formatInput(input) {
+	        var country;
+	        var splitInput = input.split(',');
+	        if (splitInput.length > 1) {
+	            country = splitInput[1].trim().toUpperCase();
+	        }
+	        var city = splitInput[0].trim();
+	        return {
+	            city: city,
+	            country: country
+	        };
 	    }
 
 	};
 
 	module.exports = logic;
+
+/***/ },
+/* 168 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var Constants = {
+	  apiKey: 'dca680da44d3f5a3',
+	  urls: {
+	    autoIp: function autoIp() {
+	      'http://api.wunderground.com/api/' + Constants.apiKey + '/geolookup/q/autoip.json';
+	    },
+	    autoComplete: function autoComplete(city, country) {
+	      return 'http://autocomplete.wunderground.com/aq?query=' + city + (country ? '&c=' + country : '') + '&format=JSON';
+	    },
+	    geoLookup: function geoLookup(latLong) {
+	      return 'http://api.wunderground.com/api/' + Constants.apiKey + '/geolookup/q/' + latLong + '.json';
+	    },
+	    forecast10day: function forecast10day(location) {
+	      return 'http://api.wunderground.com/api/' + Constants.apiKey + '/forecast10day/q/' + location + '.json';
+	    }
+	  }
+	};
+
+	module.exports = Constants;
 
 /***/ }
 /******/ ]);

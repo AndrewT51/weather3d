@@ -10,7 +10,7 @@ var AppWindow = React.createClass({
     
     return (
       <div className="app-window">
-        <MenuBar logic={logic} />
+        <MenuBar logic={logic} constants={this.props.constants} />
         <PerspectiveContext />
       </div>
     )

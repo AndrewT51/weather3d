@@ -7,7 +7,10 @@ var MenuBar = React.createClass({
   render: function(){
     return (
       <div className="menubar clearfix">
-        <InputLocation logic={this.props.logic} />
+        <InputLocation 
+          logic={this.props.logic} 
+          constants={this.props.constants}
+        />
       </div>
     )
   }

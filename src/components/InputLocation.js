@@ -13,10 +13,16 @@ var InputLocation = React.createClass({
     })
   },
   handleClick: function(evt){
-    var url = 'http://api.wunderground.com/api/dca680da44d3f5a3/conditions/q/CA/'+ this.state.value +'.json'
-    // TODO - pass this.state.value to API request
-    console.log(url)
-    this.props.logic.jsonp(url, this.props.logic.handleApiResponse);
+    // Format the input to separate city and country strings
+    var location = this.props.logic.formatInput(this.state.value);
+    // create url to request the autocompleted cities array
+    var url1 = this.props.constants.urls.autoComplete(location.city,location.country)
+    console.log('url1',url1)
+
+    var location = this.props.logic.jsonp(url1, this.props.logic.getLocation, 'cb');
+  
+
+    // console.log(this.props.constants.urls.forecast10day(location))
     this.setState({value:''})
   },
   render: function(){

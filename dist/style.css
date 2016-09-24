@@ -22,7 +22,7 @@ html, body {
   height: 10%;
   perspective: 900px;
   perspective-origin: 0% 100%;
-  animation: wobble 5s linear infinite alternate ;
+  animation: wobble 10s linear infinite alternate ;
 }
 
 @keyframes wobble {
