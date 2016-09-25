@@ -19739,18 +19739,92 @@
 	var ReactDOM = __webpack_require__(158);
 	var MenuBar = __webpack_require__(160);
 	var PerspectiveContext = __webpack_require__(162);
-	var logic = __webpack_require__(167);
+	var jsonp = __webpack_require__(167);
 
 	var AppWindow = React.createClass({
 	  displayName: 'AppWindow',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      forecast: {}
+	    };
+	  },
+	  getLocation: function getLocation(data) {
+	    console.log('DATA:', data);
+	    var locationData = data && data.RESULTS && data.RESULTS[0];
+	    if (!locationData) {
+	      return;
+	    }
+	    var city = locationData.name.replace(/,.+/, '').replace(/ /, '_');
+	    console.log('City', city);
+	    var latLong = locationData.ll.replace(/ /, ',');
+	    var country = locationData.name.replace(/.+,/, '').trim().replace(/ /, '_') || locationData.c;
+	    console.log(locationData);
+	    console.log(city + ' ' + country);
+	    var location = country + '/' + city;
+	    if (country.toUpperCase() === 'US') {
+	      var url = Constants.urls.geoLookup(latLong);
+	      return jsonp.jsonp(url, 'callback', this.getStateAcronym);
+	    }
+	    this.get10dayForecast(location);
+	  },
+
+	  autoLocateIP: function autoLocateIP(data) {
+	    console.log("AUTOIP:", data);
+	    var nearestWeatherStation = data.location && data.location.nearby_weather_stations && data.location.nearby_weather_stations.pws && data.location.nearby_weather_stations.pws.station && data.location.nearby_weather_stations.pws.station[0];
+	    console.log(nearestWeatherStation);
+	    var url = this.props.constants.urls.autoComplete(nearestWeatherStation.city, nearestWeatherStation.country);
+	    jsonp.jsonp(url, 'cb', this.getLocation);
+	  },
+
+	  forecastData: function forecastData(data) {
+	    console.log('Data:', data.forecast);
+	    this.setState({
+	      forecast: data.forecast
+	    });
+	    // PerspectiveContext.updateComponent
+	  },
+
+	  get10dayForecast: function get10dayForecast(location) {
+	    var url = this.props.constants.urls.forecast10day(location);
+	    console.log('URL: ', url);
+	    jsonp.jsonp(url, 'callback', this.forecastData);
+	  },
+
+	  getStateAcronym: function getStateAcronym(data) {
+	    var state = data.location.state;
+	    var location = state + '/' + data.location.city.replace(/ /, '_');
+	    this.get10dayForecast(location);
+	  },
+
+	  formatInput: function formatInput(input) {
+	    var country;
+	    var splitInput = input.split(',');
+	    if (splitInput.length > 1) {
+	      country = splitInput[1].trim().toUpperCase();
+	    }
+	    var city = splitInput[0].trim();
+	    return {
+	      city: city,
+	      country: country
+	    };
+	  },
 
 	  render: function render() {
 
 	    return React.createElement(
 	      'div',
 	      { className: 'app-window' },
-	      React.createElement(MenuBar, { logic: logic, constants: this.props.constants }),
-	      React.createElement(PerspectiveContext, null)
+	      React.createElement(MenuBar, {
+	        format: this.formatInput,
+	        jsonp: jsonp,
+	        getLocation: this.getLocation,
+	        autoLocateIP: this.autoLocateIP,
+	        constants: this.props.constants
+	      }),
+	      React.createElement(PerspectiveContext, {
+	        forecast: this.state.forecast
+	      })
 	    );
 	  }
 	});
@@ -19776,7 +19850,10 @@
 	      'div',
 	      { className: 'menubar clearfix' },
 	      React.createElement(InputLocation, {
-	        logic: this.props.logic,
+	        format: this.props.format,
+	        jsonp: this.props.jsonp,
+	        autoLocateIP: this.props.autoLocateIP,
+	        getLocation: this.props.getLocation,
 	        constants: this.props.constants
 	      })
 	    );
@@ -19802,10 +19879,10 @@
 	      value: ''
 	    };
 	  },
-	  getMyLocation: function getMyLocation() {
+	  autoLocateIP: function autoLocateIP() {
 	    var url = this.props.constants.urls.autoIp();
 	    console.log('url', url);
-	    this.props.logic.jsonp(url, 'callback', this.props.logic.autoLocate);
+	    this.props.jsonp.jsonp(url, 'callback', this.props.autoLocateIP);
 	  },
 	  handleChange: function handleChange(evt) {
 	    this.setState({
@@ -19813,18 +19890,15 @@
 	    });
 	  },
 	  handleClick: function handleClick(evt) {
-	    var logic = this.props.logic;
-	    // Format the input to separate city and country strings
-	    var location = logic.formatInput(this.state.value);
-	    // create url to request the autocompleted cities array
-	    var url1 = this.props.constants.urls.autoComplete(location.city, location.country);
-	    console.log('url1', url1);
+	    var jsonp = this.props.jsonp,
+	        userInput = this.props.format(this.state.value),
+	        url1 = this.props.constants.urls.autoComplete(userInput.city, userInput.country);
 
-	    var location = logic.jsonp(url1, 'cb', logic.getLocation);
-
+	    jsonp.jsonp(url1, 'cb', this.props.getLocation);
 	    // console.log(this.props.constants.urls.forecast10day(location))
 	    this.setState({ value: '' });
 	  },
+
 	  render: function render() {
 	    return React.createElement(
 	      'div',
@@ -19855,7 +19929,7 @@
 	          'button',
 	          {
 	            className: 'btn btn-default',
-	            onClick: this.getMyLocation,
+	            onClick: this.autoLocateIP,
 	            type: 'button' },
 	          React.createElement('span', { className: 'fa fa-location-arrow' })
 	        )
@@ -19881,13 +19955,21 @@
 	var PerspectiveContext = React.createClass({
 	  displayName: 'PerspectiveContext',
 
+
 	  render: function render() {
+	    console.log('Relevant', this.props.forecast);
 	    return React.createElement(
 	      'div',
 	      { className: 'context' },
-	      React.createElement(Cube, null),
-	      React.createElement(Flatscreen, null),
-	      React.createElement(Projection, null)
+	      React.createElement(Cube, {
+	        weather: this.props.forecast
+	      }),
+	      React.createElement(Flatscreen, {
+	        weather: this.props.forecast
+	      }),
+	      React.createElement(Projection, {
+	        weather: this.props.forecast
+	      })
 	    );
 	  }
 	});
@@ -19913,14 +19995,35 @@
 	    };
 	  },
 	  render: function render() {
+	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
+	    var weekday = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
+	    console.log('------->', weekday);
 	    return React.createElement(
 	      'div',
 	      { className: 'cube' },
-	      React.createElement(Face, { side: this.state.sides[0] }),
-	      React.createElement(Face, { side: this.state.sides[1] }),
-	      React.createElement(Face, { side: this.state.sides[2] }),
-	      React.createElement(Face, { side: this.state.sides[3] }),
-	      React.createElement(Face, { side: this.state.sides[4] })
+	      React.createElement(Face, {
+	        side: this.state.sides[0],
+	        weather: forecast && forecast[0],
+	        weekday: weekday && weekday[0].title
+	      }),
+	      React.createElement(Face, {
+	        side: this.state.sides[1],
+	        weather: forecast && forecast[1],
+	        weekday: weekday && weekday[2].title
+	      }),
+	      React.createElement(Face, {
+	        side: this.state.sides[2],
+	        weather: forecast && forecast[2],
+	        weekday: weekday && weekday[4].title
+	      }),
+	      React.createElement(Face, {
+	        side: this.state.sides[3],
+	        weather: forecast && forecast[3],
+	        weekday: weekday && weekday[6].title
+	      }),
+	      React.createElement(Face, {
+	        side: this.state.sides[4]
+	      })
 	    );
 	  }
 	});
@@ -19940,8 +20043,19 @@
 	  displayName: 'Face',
 
 	  render: function render() {
-	    console.log(this.props.side);
-	    return React.createElement('div', { className: 'face ' + this.props.side });
+	    var bgImage = this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/') || 'http://icons.wxug.com/i/c/e/chancerain.gif';
+	    console.log('Background', bgImage);
+	    return React.createElement(
+	      'div',
+	      { className: 'face ' + (this.props.side || 'backPanel'),
+	        style: { 'backgroundImage': 'url("' + bgImage + '")' }
+	      },
+	      React.createElement(
+	        'h2',
+	        null,
+	        this.props.weekday
+	      )
+	    );
 	  }
 	});
 
@@ -19955,12 +20069,30 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
+	var Face = __webpack_require__(164);
 
 	var Flatscreen = React.createClass({
 	  displayName: 'Flatscreen',
 
 	  render: function render() {
-	    return React.createElement('div', { className: 'flatscreen' });
+	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
+
+	    return React.createElement(
+	      'div',
+	      { className: 'flatscreen' },
+	      React.createElement(Face, {
+	        weather: forecast && forecast[5]
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[6]
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[7]
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[8]
+	      })
+	    );
 	  }
 	});
 
@@ -19978,8 +20110,20 @@
 	var Projection = React.createClass({
 	  displayName: 'Projection',
 
+
 	  render: function render() {
-	    return React.createElement('div', { className: 'projection' });
+	    var weekAhead = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
+
+	    console.log('Weather', weekAhead);
+	    return React.createElement(
+	      'div',
+	      { className: 'projection' },
+	      React.createElement(
+	        'p',
+	        null,
+	        weekAhead && weekAhead[0].fcttext
+	      )
+	    );
 	  }
 	});
 
@@ -19995,6 +20139,7 @@
 	var logic = {
 
 	    jsonp: function jsonp(url, cbName, callback) {
+	        console.log('CALLBACK:', callback);
 	        var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
 	        window[callbackName] = function (data) {
 	            delete window[callbackName];

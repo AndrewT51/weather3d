@@ -2,6 +2,7 @@ var Constants = require('../Constants')
 var logic = {
 
     jsonp: function jsonp(url, cbName, callback ) {
+        console.log('CALLBACK:',callback)
         var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
         window[callbackName] = function(data) {
             delete window[callbackName];

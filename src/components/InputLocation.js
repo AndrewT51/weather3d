@@ -7,10 +7,10 @@ var InputLocation = React.createClass({
       value: ''
     }
   },
-  getMyLocation: function(){
+  autoLocateIP: function autoLocateIP(){
     var url = this.props.constants.urls.autoIp()
     console.log('url', url)
-    this.props.logic.jsonp(url, 'callback', this.props.logic.autoLocate)
+    this.props.jsonp.jsonp(url, 'callback', this.props.autoLocateIP)
   },
   handleChange: function(evt){
     this.setState({
@@ -18,19 +18,15 @@ var InputLocation = React.createClass({
     })
   },
   handleClick: function(evt){
-    var logic = this.props.logic
-    // Format the input to separate city and country strings
-    var location = logic.formatInput(this.state.value);
-    // create url to request the autocompleted cities array
-    var url1 = this.props.constants.urls.autoComplete(location.city,location.country)
-    console.log('url1',url1)
+    var jsonp = this.props.jsonp,
+        userInput = this.props.format(this.state.value),
+        url1 = this.props.constants.urls.autoComplete(userInput.city,userInput.country);
 
-    var location = logic.jsonp(url1, 'cb', logic.getLocation);
-  
-
+    jsonp.jsonp(url1, 'cb', this.props.getLocation);
     // console.log(this.props.constants.urls.forecast10day(location))
     this.setState({value:''})
   },
+
   render: function(){
     return (
       <div className="input-group col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
@@ -52,7 +48,7 @@ var InputLocation = React.createClass({
           <span className="input-group-btn">
             <button 
               className="btn btn-default"
-              onClick={this.getMyLocation}
+              onClick={this.autoLocateIP}
               type="button">
               <span className="fa fa-location-arrow"></span>
             </button>
