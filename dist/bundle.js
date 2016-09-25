@@ -19802,19 +19802,25 @@
 	      value: ''
 	    };
 	  },
+	  getMyLocation: function getMyLocation() {
+	    var url = this.props.constants.urls.autoIp();
+	    console.log('url', url);
+	    this.props.logic.jsonp(url, 'callback', this.props.logic.autoLocate);
+	  },
 	  handleChange: function handleChange(evt) {
 	    this.setState({
 	      value: evt.target.value
 	    });
 	  },
 	  handleClick: function handleClick(evt) {
+	    var logic = this.props.logic;
 	    // Format the input to separate city and country strings
-	    var location = this.props.logic.formatInput(this.state.value);
+	    var location = logic.formatInput(this.state.value);
 	    // create url to request the autocompleted cities array
 	    var url1 = this.props.constants.urls.autoComplete(location.city, location.country);
 	    console.log('url1', url1);
 
-	    var location = this.props.logic.jsonp(url1, this.props.logic.getLocation, 'cb');
+	    var location = logic.jsonp(url1, 'cb', logic.getLocation);
 
 	    // console.log(this.props.constants.urls.forecast10day(location))
 	    this.setState({ value: '' });
@@ -19841,7 +19847,19 @@
 	        onChange: this.handleChange,
 	        className: 'form-control',
 	        placeholder: 'Current location'
-	      })
+	      }),
+	      React.createElement(
+	        'span',
+	        { className: 'input-group-btn' },
+	        React.createElement(
+	          'button',
+	          {
+	            className: 'btn btn-default',
+	            onClick: this.getMyLocation,
+	            type: 'button' },
+	          React.createElement('span', { className: 'fa fa-location-arrow' })
+	        )
+	      )
 	    );
 	  }
 	});
@@ -19976,7 +19994,7 @@
 	var Constants = __webpack_require__(168);
 	var logic = {
 
-	    jsonp: function jsonp(url, callback, cbName) {
+	    jsonp: function jsonp(url, cbName, callback) {
 	        var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
 	        window[callbackName] = function (data) {
 	            delete window[callbackName];
@@ -20003,20 +20021,23 @@
 	        var location = country + '/' + city;
 	        if (country.toUpperCase() === 'US') {
 	            var url = Constants.urls.geoLookup(latLong);
-	            logic.jsonp(url, logic.getStateAcronym, 'callback');
-	        } else {
-	            logic.get10dayForecast(location);
+	            return logic.jsonp(url, 'callback', logic.getStateAcronym);
 	        }
+	        logic.get10dayForecast(location);
 	    },
 
-	    end: function end(data) {
+	    autoLocate: function autoLocate(data) {
+	        console.log(data);
+	    },
+
+	    forecastData: function forecastData(data) {
 	        console.log('Data:', data);
 	    },
 
 	    get10dayForecast: function get10dayForecast(location) {
 	        var url = Constants.urls.forecast10day(location);
 	        console.log('URL: ', url);
-	        logic.jsonp(url, logic.end, 'callback');
+	        logic.jsonp(url, 'callback', logic.forecastData);
 	    },
 
 	    getStateAcronym: function getStateAcronym(data) {
@@ -20049,19 +20070,19 @@
 	'use strict';
 
 	var Constants = {
-	  apiKey: 'dca680da44d3f5a3',
+	  API_KEY: 'dca680da44d3f5a3',
 	  urls: {
 	    autoIp: function autoIp() {
-	      'http://api.wunderground.com/api/' + Constants.apiKey + '/geolookup/q/autoip.json';
+	      return 'http://api.wunderground.com/api/' + Constants.API_KEY + '/geolookup/q/autoip.json';
 	    },
 	    autoComplete: function autoComplete(city, country) {
 	      return 'http://autocomplete.wunderground.com/aq?query=' + city + (country ? '&c=' + country : '') + '&format=JSON';
 	    },
 	    geoLookup: function geoLookup(latLong) {
-	      return 'http://api.wunderground.com/api/' + Constants.apiKey + '/geolookup/q/' + latLong + '.json';
+	      return 'http://api.wunderground.com/api/' + Constants.API_KEY + '/geolookup/q/' + latLong + '.json';
 	    },
 	    forecast10day: function forecast10day(location) {
-	      return 'http://api.wunderground.com/api/' + Constants.apiKey + '/forecast10day/q/' + location + '.json';
+	      return 'http://api.wunderground.com/api/' + Constants.API_KEY + '/forecast10day/q/' + location + '.json';
 	    }
 	  }
 	};

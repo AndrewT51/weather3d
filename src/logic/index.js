@@ -1,7 +1,7 @@
 var Constants = require('../Constants')
 var logic = {
 
-    jsonp: function jsonp(url, callback, cbName) {
+    jsonp: function jsonp(url, cbName, callback ) {
         var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
         window[callbackName] = function(data) {
             delete window[callbackName];
@@ -28,20 +28,24 @@ var logic = {
         var location = country + '/' + city;
         if(country.toUpperCase() === 'US'){
             var url = Constants.urls.geoLookup(latLong)
-            logic.jsonp(url, logic.getStateAcronym, 'callback')
-        }else{
-            logic.get10dayForecast(location)
+            return logic.jsonp(url, 'callback', logic.getStateAcronym )
         }
+        logic.get10dayForecast(location)
+        
     },
 
-    end: function end(data){
+    autoLocate: function autoLocate(data){
+        console.log(data)
+    },
+
+    forecastData: function forecastData(data){
         console.log('Data:', data)
     },
 
     get10dayForecast: function get10dayForecast(location){
         var url = Constants.urls.forecast10day(location)
         console.log('URL: ', url)
-        logic.jsonp(url, logic.end, 'callback')
+        logic.jsonp(url, 'callback', logic.forecastData )
     },
 
     getStateAcronym: function getStateAcronym(data){
