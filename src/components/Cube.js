@@ -5,7 +5,7 @@ var Face = require('./Face')
 var Cube = React.createClass({
   getInitialState: function(){
     return {
-      sides: ['front','back','right', 'left','top']
+      sides: ['front','right', 'back', 'left','top']
     }
   },
   render: function(){
@@ -17,7 +17,8 @@ var Cube = React.createClass({
      this.props.weather.txt_forecast.forecastday
     console.log('------->',weekday)
     return (
-      <div className="cube">
+      <div className="cube" style={{'transform': 'rotateY('+ this.props.cubeRotation +'deg)'
+}}>
         <Face 
           side={this.state.sides[0]}
           weather={forecast && forecast[0]}

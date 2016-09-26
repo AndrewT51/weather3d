@@ -19746,7 +19746,9 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      forecast: {}
+	      forecast: {},
+	      cubeRotation: 0,
+	      sliderPosition: 20
 	    };
 	  },
 	  getLocation: function getLocation(data) {
@@ -19810,6 +19812,20 @@
 	    };
 	  },
 
+	  rotate: function rotate(clockwise) {
+	    var degrees = clockwise ? 90 : -90;
+	    this.setState({
+	      cubeRotation: this.state.cubeRotation + degrees
+	    });
+	  },
+
+	  slide: function slide(moveRight) {
+	    var position = moveRight ? 20 : -20;
+	    this.setState({
+	      sliderPosition: this.state.sliderPosition + position
+	    });
+	  },
+
 	  render: function render() {
 
 	    return React.createElement(
@@ -19820,9 +19836,13 @@
 	        jsonp: jsonp,
 	        getLocation: this.getLocation,
 	        autoLocateIP: this.autoLocateIP,
-	        constants: this.props.constants
+	        constants: this.props.constants,
+	        rotate: this.rotate,
+	        slide: this.slide
 	      }),
 	      React.createElement(PerspectiveContext, {
+	        cubeRotation: this.state.cubeRotation,
+	        sliderPosition: this.state.sliderPosition,
 	        forecast: this.state.forecast
 	      })
 	    );
@@ -19844,7 +19864,14 @@
 	var MenuBar = React.createClass({
 	  displayName: 'MenuBar',
 
-
+	  handleNext: function handleNext() {
+	    this.props.rotate();
+	    this.props.slide();
+	  },
+	  handlePrev: function handlePrev() {
+	    this.props.rotate(true);
+	    this.props.slide(true);
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
@@ -19855,7 +19882,17 @@
 	        autoLocateIP: this.props.autoLocateIP,
 	        getLocation: this.props.getLocation,
 	        constants: this.props.constants
-	      })
+	      }),
+	      React.createElement(
+	        'button',
+	        { onClick: this.handleNext },
+	        'Next'
+	      ),
+	      React.createElement(
+	        'button',
+	        { onClick: this.handlePrev },
+	        'Prev'
+	      )
 	    );
 	  }
 	});
@@ -19949,7 +19986,7 @@
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
 	var Cube = __webpack_require__(163);
-	var Flatscreen = __webpack_require__(165);
+	var Flatscreen = __webpack_require__(164);
 	var Projection = __webpack_require__(166);
 
 	var PerspectiveContext = React.createClass({
@@ -19961,10 +19998,13 @@
 	    return React.createElement(
 	      'div',
 	      { className: 'context' },
+	      React.createElement('div', { className: 'frontscreen' }),
 	      React.createElement(Cube, {
+	        cubeRotation: this.props.cubeRotation,
 	        weather: this.props.forecast
 	      }),
 	      React.createElement(Flatscreen, {
+	        sliderPosition: this.props.sliderPosition,
 	        weather: this.props.forecast
 	      }),
 	      React.createElement(Projection, {
@@ -19984,14 +20024,14 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var Face = __webpack_require__(164);
+	var Face = __webpack_require__(165);
 
 	var Cube = React.createClass({
 	  displayName: 'Cube',
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      sides: ['front', 'back', 'right', 'left', 'top']
+	      sides: ['front', 'right', 'back', 'left', 'top']
 	    };
 	  },
 	  render: function render() {
@@ -20000,7 +20040,8 @@
 	    console.log('------->', weekday);
 	    return React.createElement(
 	      'div',
-	      { className: 'cube' },
+	      { className: 'cube', style: { 'transform': 'rotateY(' + this.props.cubeRotation + 'deg)'
+	        } },
 	      React.createElement(Face, {
 	        side: this.state.sides[0],
 	        weather: forecast && forecast[0],
@@ -20038,6 +20079,46 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
+	var Face = __webpack_require__(165);
+
+	var Flatscreen = React.createClass({
+	  displayName: 'Flatscreen',
+
+	  render: function render() {
+	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
+
+	    return React.createElement(
+	      'div',
+	      {
+	        className: 'flatscreen',
+	        style: { 'transform': 'translate3d(' + this.props.sliderPosition + 'vw,0,-10vw)' }
+	      },
+	      React.createElement(Face, {
+	        weather: forecast && forecast[5]
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[6]
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[7]
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[8]
+	      })
+	    );
+	  }
+	});
+
+	module.exports = Flatscreen;
+
+/***/ },
+/* 165 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactDOM = __webpack_require__(158);
 
 	var Face = React.createClass({
 	  displayName: 'Face',
@@ -20060,43 +20141,6 @@
 	});
 
 	module.exports = Face;
-
-/***/ },
-/* 165 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactDOM = __webpack_require__(158);
-	var Face = __webpack_require__(164);
-
-	var Flatscreen = React.createClass({
-	  displayName: 'Flatscreen',
-
-	  render: function render() {
-	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
-
-	    return React.createElement(
-	      'div',
-	      { className: 'flatscreen' },
-	      React.createElement(Face, {
-	        weather: forecast && forecast[5]
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[6]
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[7]
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[8]
-	      })
-	    );
-	  }
-	});
-
-	module.exports = Flatscreen;
 
 /***/ },
 /* 166 */

@@ -9,7 +9,11 @@ var Flatscreen = React.createClass({
       this.props.weather.simpleforecast.forecastday
 
     return (
-      <div className="flatscreen">
+      <div 
+        className="flatscreen" 
+        style={{ 'transform': 'translate3d('+ this.props.sliderPosition +'vw,0,-10vw)'}}
+      >
+   
         <Face 
           weather={forecast && forecast[5]}
         />

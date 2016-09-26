@@ -10,10 +10,14 @@ var PerspectiveContext = React.createClass({
     console.log('Relevant',this.props.forecast)
     return (
       <div className="context">
+      <div className="frontscreen">
+      </div>  
         <Cube 
+          cubeRotation={this.props.cubeRotation}
           weather={this.props.forecast}
         />
         <Flatscreen 
+          sliderPosition={this.props.sliderPosition}
           weather={this.props.forecast}
         />
         <Projection 

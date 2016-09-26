@@ -52,14 +52,15 @@ h2{
 }
 
 .cube {
-  transform: rotateY(0deg);
   transition: transform 2s;
 }
 
-.cube:hover {
+/*.context:hover .cube{
   transform: rotateY(-90deg);
-
-}
+}*/
+/*.context:hover .flatscreen{
+  transform: translate3d(0vw,0,-10vw);
+}*/
 
 .face {
   border: 4px solid #49629C;
@@ -111,9 +112,21 @@ h2{
   transform-style: flat;
   width: 80vw;
   background-color: rgba(73, 98, 156,0.5);
-  transform: translate3d(0,0,-10vw);
+  transform: translate3d(20vw,0,-10vw);
   z-index: -1;
+  transition: transform 2s;
 
+}
+.frontscreen {
+  box-sizing: border-box;
+  position:absolute;
+  transform-style: preserve-3d;
+  transform: translate3d(-20vw,-2vh,-10vw);
+  background-image:linear-gradient(to right, #9aadd8 18%, transparent 19%, #9aadd8 60%);
+  width:140vw;
+  height:34vh;
+  margin-top: 25vh;
+  margin-left: 15vw;
 }
 
 .projection {

@@ -7,7 +7,9 @@ var jsonp = require('../logic');
 var AppWindow = React.createClass({
   getInitialState: function(){
     return {
-      forecast:{}
+      forecast:{},
+      cubeRotation:0, 
+      sliderPosition: 20
     }
   },
   getLocation: function getLocation(data){
@@ -27,8 +29,7 @@ var AppWindow = React.createClass({
           var url = Constants.urls.geoLookup(latLong)
           return jsonp.jsonp(url, 'callback', this.getStateAcronym )
       }
-      this.get10dayForecast(location)
-      
+      this.get10dayForecast(location)     
   },
 
   autoLocateIP: function autoLocateIP(data){
@@ -77,6 +78,21 @@ var AppWindow = React.createClass({
       }
   },
 
+  rotate: function(clockwise){
+    var degrees = clockwise ? 90 : -90
+    this.setState({
+      cubeRotation: this.state.cubeRotation + degrees
+    })
+
+  },
+
+  slide: function(moveRight){
+    var position = moveRight ? 20 : -20
+    this.setState({
+      sliderPosition: this.state.sliderPosition + position
+    })
+  },
+
   render: function(){
   
     return (
@@ -87,8 +103,12 @@ var AppWindow = React.createClass({
           getLocation={this.getLocation}
           autoLocateIP={this.autoLocateIP}
           constants={this.props.constants} 
+          rotate={this.rotate}
+          slide={this.slide}
         />
         <PerspectiveContext
+          cubeRotation={this.state.cubeRotation}
+          sliderPosition={this.state.sliderPosition}
           forecast={this.state.forecast} 
         />
       </div>
