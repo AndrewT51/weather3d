@@ -37,7 +37,7 @@ var Cube = React.createClass({
         <Face 
           side={this.state.sides[3]}
           weather={forecast && forecast[3]}
-          weekday={weekday && weekday[6].title}
+          weekday={weekday && weekday[12].title}
         />
         <Face 
           side={this.state.sides[4]}

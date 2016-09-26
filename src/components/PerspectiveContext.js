@@ -17,8 +17,10 @@ var PerspectiveContext = React.createClass({
           weather={this.props.forecast}
         />
         <Flatscreen 
+          dayOrder={this.props.dayOrder}
           sliderPosition={this.props.sliderPosition}
           weather={this.props.forecast}
+          slideTime={this.props.slideTime}
         />
         <Projection 
           weather={this.props.forecast}

@@ -19748,7 +19748,9 @@
 	    return {
 	      forecast: {},
 	      cubeRotation: 0,
-	      sliderPosition: 20
+	      sliderPosition: 0,
+	      dayOrder: [0, 1, 2, 3, 4, 5, 6],
+	      slideTime: 2
 	    };
 	  },
 	  getLocation: function getLocation(data) {
@@ -19813,9 +19815,30 @@
 	  },
 
 	  rotate: function rotate(clockwise) {
-	    var degrees = clockwise ? 90 : -90;
+	    var degrees = clockwise ? 90 : -90,
+	        tempArr = [].concat(this.state.dayOrder),
+	        element;
+	    setTimeout(function () {
+	      if (clockwise) {
+	        degrees = 90;
+	        element = tempArr.pop();
+	        tempArr.unshift(element);
+	        this.slide();
+	      } else {
+	        degrees = -90;
+	        element = tempArr.shift();
+	        tempArr.push(element);
+	        this.slide(true);
+	      }
+	      this.setState({
+	        dayOrder: tempArr,
+	        slideTime: 0
+	      });
+	    }.bind(this), 2000);
+
 	    this.setState({
-	      cubeRotation: this.state.cubeRotation + degrees
+	      cubeRotation: this.state.cubeRotation + degrees,
+	      slideTime: 2
 	    });
 	  },
 
@@ -19841,9 +19864,11 @@
 	        slide: this.slide
 	      }),
 	      React.createElement(PerspectiveContext, {
+	        dayOrder: this.state.dayOrder,
 	        cubeRotation: this.state.cubeRotation,
 	        sliderPosition: this.state.sliderPosition,
-	        forecast: this.state.forecast
+	        forecast: this.state.forecast,
+	        slideTime: this.state.slideTime
 	      })
 	    );
 	  }
@@ -19986,7 +20011,7 @@
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
 	var Cube = __webpack_require__(163);
-	var Flatscreen = __webpack_require__(164);
+	var Flatscreen = __webpack_require__(165);
 	var Projection = __webpack_require__(166);
 
 	var PerspectiveContext = React.createClass({
@@ -20004,8 +20029,10 @@
 	        weather: this.props.forecast
 	      }),
 	      React.createElement(Flatscreen, {
+	        dayOrder: this.props.dayOrder,
 	        sliderPosition: this.props.sliderPosition,
-	        weather: this.props.forecast
+	        weather: this.props.forecast,
+	        slideTime: this.props.slideTime
 	      }),
 	      React.createElement(Projection, {
 	        weather: this.props.forecast
@@ -20024,7 +20051,7 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var Face = __webpack_require__(165);
+	var Face = __webpack_require__(164);
 
 	var Cube = React.createClass({
 	  displayName: 'Cube',
@@ -20060,7 +20087,7 @@
 	      React.createElement(Face, {
 	        side: this.state.sides[3],
 	        weather: forecast && forecast[3],
-	        weekday: weekday && weekday[6].title
+	        weekday: weekday && weekday[12].title
 	      }),
 	      React.createElement(Face, {
 	        side: this.state.sides[4]
@@ -20073,46 +20100,6 @@
 
 /***/ },
 /* 164 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactDOM = __webpack_require__(158);
-	var Face = __webpack_require__(165);
-
-	var Flatscreen = React.createClass({
-	  displayName: 'Flatscreen',
-
-	  render: function render() {
-	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
-
-	    return React.createElement(
-	      'div',
-	      {
-	        className: 'flatscreen',
-	        style: { 'transform': 'translate3d(' + this.props.sliderPosition + 'vw,0,-10vw)' }
-	      },
-	      React.createElement(Face, {
-	        weather: forecast && forecast[5]
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[6]
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[7]
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[8]
-	      })
-	    );
-	  }
-	});
-
-	module.exports = Flatscreen;
-
-/***/ },
-/* 165 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -20141,6 +20128,54 @@
 	});
 
 	module.exports = Face;
+
+/***/ },
+/* 165 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactDOM = __webpack_require__(158);
+	var Face = __webpack_require__(164);
+
+	var Flatscreen = React.createClass({
+	  displayName: 'Flatscreen',
+
+	  render: function render() {
+	    var days = this.props.dayOrder;
+	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
+	    var weekday = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
+
+	    return React.createElement(
+	      'div',
+	      {
+	        className: 'flatscreen',
+	        style: { 'transform': 'translate3d(' + this.props.sliderPosition + 'vw,0,-10vw)',
+	          'transition': 'transform ' + this.props.slideTime + 's'
+	        }
+	      },
+	      React.createElement(Face, {
+	        weather: forecast && forecast[days[1]],
+	        weekday: weekday && weekday[days[1] * 2].title
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[days[2]],
+	        weekday: weekday && weekday[days[2] * 2].title
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[days[3]],
+	        weekday: weekday && weekday[days[3] * 2].title
+	      }),
+	      React.createElement(Face, {
+	        weather: forecast && forecast[days[4]],
+	        weekday: weekday && weekday[days[4] * 2].title
+	      })
+	    );
+	  }
+	});
+
+	module.exports = Flatscreen;
 
 /***/ },
 /* 166 */

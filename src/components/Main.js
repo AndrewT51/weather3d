@@ -9,7 +9,9 @@ var AppWindow = React.createClass({
     return {
       forecast:{},
       cubeRotation:0, 
-      sliderPosition: 20
+      sliderPosition: 0,
+      dayOrder: [0,1,2,3,4,5,6],
+      slideTime: 2
     }
   },
   getLocation: function getLocation(data){
@@ -79,11 +81,31 @@ var AppWindow = React.createClass({
   },
 
   rotate: function(clockwise){
-    var degrees = clockwise ? 90 : -90
+    var degrees = clockwise ? 90 : -90,
+        tempArr = [].concat(this.state.dayOrder),
+        element;
+    setTimeout(function(){
+      if(clockwise){
+        degrees = 90
+        element = tempArr.pop();
+        tempArr.unshift(element)
+        this.slide()
+      }else{
+        degrees = -90
+        element = tempArr.shift();
+        tempArr.push(element)
+        this.slide(true)
+      }
+      this.setState({
+        dayOrder: tempArr,
+        slideTime: 0
+      })
+    }.bind(this),2000)
+    
     this.setState({
-      cubeRotation: this.state.cubeRotation + degrees
+      cubeRotation: this.state.cubeRotation + degrees,
+      slideTime: 2
     })
-
   },
 
   slide: function(moveRight){
@@ -107,9 +129,11 @@ var AppWindow = React.createClass({
           slide={this.slide}
         />
         <PerspectiveContext
+          dayOrder={this.state.dayOrder}
           cubeRotation={this.state.cubeRotation}
           sliderPosition={this.state.sliderPosition}
           forecast={this.state.forecast} 
+          slideTime={this.state.slideTime}
         />
       </div>
     )
