@@ -7,14 +7,16 @@ var Projection = require('./Projection')
 var PerspectiveContext = React.createClass({
 
   render: function(){
-    console.log('Relevant',this.props.forecast)
     return (
       <div className="context">
       <div className="frontscreen">
       </div>  
         <Cube 
           cubeRotation={this.props.cubeRotation}
+          cubeDays={this.props.cubeDays}
           weather={this.props.forecast}
+          dayOrder={this.props.dayOrder}
+          slideTime={this.props.slideTime}
         />
         <Flatscreen 
           dayOrder={this.props.dayOrder}
@@ -23,6 +25,7 @@ var PerspectiveContext = React.createClass({
           slideTime={this.props.slideTime}
         />
         <Projection 
+          day={this.props.dayOrder[0]*2}
           weather={this.props.forecast}
         />
       </div>

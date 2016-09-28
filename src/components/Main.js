@@ -2,6 +2,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var MenuBar = require('./MenuBar')
 var PerspectiveContext = require('./PerspectiveContext')
+var LocationPanel = require('./LocationPanel')
 var jsonp = require('../logic');
 
 var AppWindow = React.createClass({
@@ -11,59 +12,55 @@ var AppWindow = React.createClass({
       cubeRotation:0, 
       sliderPosition: 0,
       dayOrder: [0,1,2,3,4,5,6],
-      slideTime: 2
+      cubeDays: [0,1,2,6],
+      faceChangePointer: 2,
+      slideTime: 1,
+      location: ''
     }
   },
   getLocation: function getLocation(data){
-      console.log('DATA:',data)
       var locationData = data && data.RESULTS && data.RESULTS[0];
       if(!locationData){
           return
       }
-      var city = locationData.name.replace(/,.+/,'').replace(/ /,'_');
-      console.log('City',city)
+      var city = locationData.name.replace(/,.+/,'').replace(/ /g,'_');
       var latLong = locationData.ll.replace(/ /,',')
-      var country = locationData.name.replace(/.+,/,'').trim().replace(/ /,'_') || locationData.c;
-      console.log(locationData)
-      console.log(city + ' ' + country);
+      var country = locationData.name.replace(/.+,/,'').trim().replace(/ /g,'_') || locationData.c;
       var location = country + '/' + city;
       if(country.toUpperCase() === 'US'){
           var url = Constants.urls.geoLookup(latLong)
           return jsonp.jsonp(url, 'callback', this.getStateAcronym )
       }
+      this.setState({location: city.replace(/_/g,' ') + ', ' + country.replace(/_/g,' ')})
       this.get10dayForecast(location)     
   },
 
   autoLocateIP: function autoLocateIP(data){
-    console.log("AUTOIP:", data)
     var nearestWeatherStation = data.location &&
       data.location.nearby_weather_stations &&
       data.location.nearby_weather_stations.pws &&
       data.location.nearby_weather_stations.pws.station &&
       data.location.nearby_weather_stations.pws.station[0];
-    console.log(nearestWeatherStation)
     var url = this.props.constants.urls.autoComplete(nearestWeatherStation.city,nearestWeatherStation.country);
     jsonp.jsonp(url, 'cb', this.getLocation);
-
   },
 
   forecastData: function forecastData(data){
-      console.log('Data:', data.forecast)
       this.setState({
         forecast: data.forecast
       })
-      // PerspectiveContext.updateComponent
   },
 
   get10dayForecast: function get10dayForecast(location){
+
       var url = this.props.constants.urls.forecast10day(location)
-      console.log('URL: ', url)
       jsonp.jsonp(url, 'callback', this.forecastData )
   },
 
   getStateAcronym: function getStateAcronym(data){
+      this.setState({location: data.location.city.replace(/_/g,' ') + ', ' + data.location.state.replace(/_/g,' ')})
       var state = data.location.state
-      var location = state + '/' + data.location.city.replace(/ /,'_')
+      var location = state + '/' + data.location.city.replace(/ /g,'_')
       this.get10dayForecast(location)
   },
 
@@ -81,9 +78,24 @@ var AppWindow = React.createClass({
   },
 
   rotate: function(clockwise){
+    console.log('Day:',this.state.dayOrder[0])
     var degrees = clockwise ? 90 : -90,
-        tempArr = [].concat(this.state.dayOrder),
+        tempArr = this.state.dayOrder.slice(),
+        pointer = this.state.faceChangePointer,
+        cubeDays = this.state.cubeDays.slice(),
         element;
+    if(!clockwise){
+      // first calculate the face we need to take the value of
+      var faceToRightVal = cubeDays[(pointer > 0 ? pointer - 1 : 3 )]
+      cubeDays[pointer] = faceToRightVal > 5 ? 0 : faceToRightVal + 1
+      pointer = pointer === 3 ? 0 : pointer + 1;
+    }else{
+      var faceToLeftVal = cubeDays[(pointer < 3 ? pointer + 1 : 0 )]
+      cubeDays[pointer] = faceToLeftVal < 1 ? 6 : faceToLeftVal - 1
+      pointer = pointer === 0 ? 3 : pointer - 1;
+    }
+    this.setState({faceChangePointer: pointer})
+    this.setState({cubeDays: cubeDays})
     setTimeout(function(){
       if(clockwise){
         degrees = 90
@@ -100,11 +112,10 @@ var AppWindow = React.createClass({
         dayOrder: tempArr,
         slideTime: 0
       })
-    }.bind(this),2000)
-    
+    }.bind(this), this.state.slideTime ? this.state.slideTime * 1000 : 1000)
     this.setState({
       cubeRotation: this.state.cubeRotation + degrees,
-      slideTime: 2
+      slideTime: 1
     })
   },
 
@@ -116,7 +127,6 @@ var AppWindow = React.createClass({
   },
 
   render: function(){
-  
     return (
       <div className="app-window">
         <MenuBar 
@@ -129,11 +139,16 @@ var AppWindow = React.createClass({
           slide={this.slide}
         />
         <PerspectiveContext
+          className={this.state.location ? "hidden" : ""}
+          cubeDays={this.state.cubeDays}
           dayOrder={this.state.dayOrder}
           cubeRotation={this.state.cubeRotation}
           sliderPosition={this.state.sliderPosition}
           forecast={this.state.forecast} 
           slideTime={this.state.slideTime}
+        />
+        <LocationPanel 
+          location={this.state.location}
         />
       </div>
     )

@@ -11,13 +11,18 @@ var Flatscreen = React.createClass({
     var weekday = this.props.weather && 
      this.props.weather.txt_forecast &&
      this.props.weather.txt_forecast.forecastday
-
+     try{
+      console.log('WeekDAY',weekday[days[0] *2].title)
+     }catch(e){
+      console.log(e)
+     }
     return (
       <div 
-        className="flatscreen" 
+        className={"flatscreen " + (!weekday ? "hidden" : "")}
+
         style={{ 'transform': 'translate3d('+ this.props.sliderPosition +'vw,0,-10vw)',
           'transition': 'transform ' + this.props.slideTime + 's'
-        }}
+        }} 
       >
 
         <Face 

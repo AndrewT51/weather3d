@@ -5,44 +5,45 @@ var Face = require('./Face')
 var Cube = React.createClass({
   getInitialState: function(){
     return {
-      sides: ['front','right', 'back', 'left','top']
+      sides: ['front','right', 'back', 'left'],
     }
   },
-  render: function(){
-    var forecast = this.props.weather &&
-      this.props.weather.simpleforecast &&
-      this.props.weather.simpleforecast.forecastday
-    var weekday = this.props.weather && 
-     this.props.weather.txt_forecast &&
-     this.props.weather.txt_forecast.forecastday
-    console.log('------->',weekday)
-    return (
-      <div className="cube" style={{'transform': 'rotateY('+ this.props.cubeRotation +'deg)'
-}}>
+  createFaceList: function(weekday, forecast){
+    return this.state.sides.map(function(element, index){
+      return ( 
         <Face 
-          side={this.state.sides[0]}
-          weather={forecast && forecast[0]}
-          weekday={weekday && weekday[0].title}
+          side={element}
+          weather={forecast && forecast[this.props.cubeDays[index]]}
+          weekday={weekday && weekday[(this.props.cubeDays[index] * 2)].title}
+          key={index}
         />
-        <Face 
-          side={this.state.sides[1]}
-          weather={forecast && forecast[1]}
-          weekday={weekday && weekday[2].title}
-        />
-        <Face 
-          side={this.state.sides[2]}
-          weather={forecast && forecast[2]}
-          weekday={weekday && weekday[4].title}
-        />
-        <Face 
-          side={this.state.sides[3]}
-          weather={forecast && forecast[3]}
-          weekday={weekday && weekday[12].title}
-        />
-        <Face 
-          side={this.state.sides[4]}
-        />
+      )
+    }.bind(this))
+  },
 
+  render: function(){
+    var days = this.props.dayOrder 
+    try {
+      var forecast = this.props.weather.simpleforecast.forecastday
+      var weekday = this.props.weather.txt_forecast.forecastday
+    } catch (e){
+      console.log('Error:',e)
+    }
+    if(weekday){
+      weekday[0].title = 'Today'
+      weekday[2].title = 'Tomorrow'
+    }
+   
+    return (
+      <div 
+        className={"cube " + (!forecast ? "hidden" : "")} 
+        style={{
+          'transform': 'rotateY('+ this.props.cubeRotation +'deg)',
+          'transition': 'transform ' + this.props.slideTime + 's'
+        }}
+      >
+        {this.createFaceList(weekday, forecast)}
+        <Face side={'top'} />
       </div>
     )
   }

@@ -19739,6 +19739,7 @@
 	var ReactDOM = __webpack_require__(158);
 	var MenuBar = __webpack_require__(160);
 	var PerspectiveContext = __webpack_require__(162);
+	var LocationPanel = __webpack_require__(169);
 	var jsonp = __webpack_require__(167);
 
 	var AppWindow = React.createClass({
@@ -19750,54 +19751,51 @@
 	      cubeRotation: 0,
 	      sliderPosition: 0,
 	      dayOrder: [0, 1, 2, 3, 4, 5, 6],
-	      slideTime: 2
+	      cubeDays: [0, 1, 2, 6],
+	      faceChangePointer: 2,
+	      slideTime: 1,
+	      location: ''
 	    };
 	  },
 	  getLocation: function getLocation(data) {
-	    console.log('DATA:', data);
 	    var locationData = data && data.RESULTS && data.RESULTS[0];
 	    if (!locationData) {
 	      return;
 	    }
-	    var city = locationData.name.replace(/,.+/, '').replace(/ /, '_');
-	    console.log('City', city);
+	    var city = locationData.name.replace(/,.+/, '').replace(/ /g, '_');
 	    var latLong = locationData.ll.replace(/ /, ',');
-	    var country = locationData.name.replace(/.+,/, '').trim().replace(/ /, '_') || locationData.c;
-	    console.log(locationData);
-	    console.log(city + ' ' + country);
+	    var country = locationData.name.replace(/.+,/, '').trim().replace(/ /g, '_') || locationData.c;
 	    var location = country + '/' + city;
 	    if (country.toUpperCase() === 'US') {
 	      var url = Constants.urls.geoLookup(latLong);
 	      return jsonp.jsonp(url, 'callback', this.getStateAcronym);
 	    }
+	    this.setState({ location: city.replace(/_/g, ' ') + ', ' + country.replace(/_/g, ' ') });
 	    this.get10dayForecast(location);
 	  },
 
 	  autoLocateIP: function autoLocateIP(data) {
-	    console.log("AUTOIP:", data);
 	    var nearestWeatherStation = data.location && data.location.nearby_weather_stations && data.location.nearby_weather_stations.pws && data.location.nearby_weather_stations.pws.station && data.location.nearby_weather_stations.pws.station[0];
-	    console.log(nearestWeatherStation);
 	    var url = this.props.constants.urls.autoComplete(nearestWeatherStation.city, nearestWeatherStation.country);
 	    jsonp.jsonp(url, 'cb', this.getLocation);
 	  },
 
 	  forecastData: function forecastData(data) {
-	    console.log('Data:', data.forecast);
 	    this.setState({
 	      forecast: data.forecast
 	    });
-	    // PerspectiveContext.updateComponent
 	  },
 
 	  get10dayForecast: function get10dayForecast(location) {
+
 	    var url = this.props.constants.urls.forecast10day(location);
-	    console.log('URL: ', url);
 	    jsonp.jsonp(url, 'callback', this.forecastData);
 	  },
 
 	  getStateAcronym: function getStateAcronym(data) {
+	    this.setState({ location: data.location.city.replace(/_/g, ' ') + ', ' + data.location.state.replace(/_/g, ' ') });
 	    var state = data.location.state;
-	    var location = state + '/' + data.location.city.replace(/ /, '_');
+	    var location = state + '/' + data.location.city.replace(/ /g, '_');
 	    this.get10dayForecast(location);
 	  },
 
@@ -19815,9 +19813,24 @@
 	  },
 
 	  rotate: function rotate(clockwise) {
+	    console.log('Day:', this.state.dayOrder[0]);
 	    var degrees = clockwise ? 90 : -90,
-	        tempArr = [].concat(this.state.dayOrder),
+	        tempArr = this.state.dayOrder.slice(),
+	        pointer = this.state.faceChangePointer,
+	        cubeDays = this.state.cubeDays.slice(),
 	        element;
+	    if (!clockwise) {
+	      // first calculate the face we need to take the value of
+	      var faceToRightVal = cubeDays[pointer > 0 ? pointer - 1 : 3];
+	      cubeDays[pointer] = faceToRightVal > 5 ? 0 : faceToRightVal + 1;
+	      pointer = pointer === 3 ? 0 : pointer + 1;
+	    } else {
+	      var faceToLeftVal = cubeDays[pointer < 3 ? pointer + 1 : 0];
+	      cubeDays[pointer] = faceToLeftVal < 1 ? 6 : faceToLeftVal - 1;
+	      pointer = pointer === 0 ? 3 : pointer - 1;
+	    }
+	    this.setState({ faceChangePointer: pointer });
+	    this.setState({ cubeDays: cubeDays });
 	    setTimeout(function () {
 	      if (clockwise) {
 	        degrees = 90;
@@ -19834,11 +19847,10 @@
 	        dayOrder: tempArr,
 	        slideTime: 0
 	      });
-	    }.bind(this), 2000);
-
+	    }.bind(this), this.state.slideTime ? this.state.slideTime * 1000 : 1000);
 	    this.setState({
 	      cubeRotation: this.state.cubeRotation + degrees,
-	      slideTime: 2
+	      slideTime: 1
 	    });
 	  },
 
@@ -19850,7 +19862,6 @@
 	  },
 
 	  render: function render() {
-
 	    return React.createElement(
 	      'div',
 	      { className: 'app-window' },
@@ -19864,11 +19875,16 @@
 	        slide: this.slide
 	      }),
 	      React.createElement(PerspectiveContext, {
+	        className: this.state.location ? "hidden" : "",
+	        cubeDays: this.state.cubeDays,
 	        dayOrder: this.state.dayOrder,
 	        cubeRotation: this.state.cubeRotation,
 	        sliderPosition: this.state.sliderPosition,
 	        forecast: this.state.forecast,
 	        slideTime: this.state.slideTime
+	      }),
+	      React.createElement(LocationPanel, {
+	        location: this.state.location
 	      })
 	    );
 	  }
@@ -20019,14 +20035,16 @@
 
 
 	  render: function render() {
-	    console.log('Relevant', this.props.forecast);
 	    return React.createElement(
 	      'div',
 	      { className: 'context' },
 	      React.createElement('div', { className: 'frontscreen' }),
 	      React.createElement(Cube, {
 	        cubeRotation: this.props.cubeRotation,
-	        weather: this.props.forecast
+	        cubeDays: this.props.cubeDays,
+	        weather: this.props.forecast,
+	        dayOrder: this.props.dayOrder,
+	        slideTime: this.props.slideTime
 	      }),
 	      React.createElement(Flatscreen, {
 	        dayOrder: this.props.dayOrder,
@@ -20035,6 +20053,7 @@
 	        slideTime: this.props.slideTime
 	      }),
 	      React.createElement(Projection, {
+	        day: this.props.dayOrder[0] * 2,
 	        weather: this.props.forecast
 	      })
 	    );
@@ -20058,40 +20077,44 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      sides: ['front', 'right', 'back', 'left', 'top']
+	      sides: ['front', 'right', 'back', 'left']
 	    };
 	  },
+	  createFaceList: function createFaceList(weekday, forecast) {
+	    return this.state.sides.map(function (element, index) {
+	      return React.createElement(Face, {
+	        side: element,
+	        weather: forecast && forecast[this.props.cubeDays[index]],
+	        weekday: weekday && weekday[this.props.cubeDays[index] * 2].title,
+	        key: index
+	      });
+	    }.bind(this));
+	  },
+
 	  render: function render() {
-	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
-	    var weekday = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
-	    console.log('------->', weekday);
+	    var days = this.props.dayOrder;
+	    try {
+	      var forecast = this.props.weather.simpleforecast.forecastday;
+	      var weekday = this.props.weather.txt_forecast.forecastday;
+	    } catch (e) {
+	      console.log('Error:', e);
+	    }
+	    if (weekday) {
+	      weekday[0].title = 'Today';
+	      weekday[2].title = 'Tomorrow';
+	    }
+
 	    return React.createElement(
 	      'div',
-	      { className: 'cube', style: { 'transform': 'rotateY(' + this.props.cubeRotation + 'deg)'
-	        } },
-	      React.createElement(Face, {
-	        side: this.state.sides[0],
-	        weather: forecast && forecast[0],
-	        weekday: weekday && weekday[0].title
-	      }),
-	      React.createElement(Face, {
-	        side: this.state.sides[1],
-	        weather: forecast && forecast[1],
-	        weekday: weekday && weekday[2].title
-	      }),
-	      React.createElement(Face, {
-	        side: this.state.sides[2],
-	        weather: forecast && forecast[2],
-	        weekday: weekday && weekday[4].title
-	      }),
-	      React.createElement(Face, {
-	        side: this.state.sides[3],
-	        weather: forecast && forecast[3],
-	        weekday: weekday && weekday[12].title
-	      }),
-	      React.createElement(Face, {
-	        side: this.state.sides[4]
-	      })
+	      {
+	        className: "cube " + (!forecast ? "hidden" : ""),
+	        style: {
+	          'transform': 'rotateY(' + this.props.cubeRotation + 'deg)',
+	          'transition': 'transform ' + this.props.slideTime + 's'
+	        }
+	      },
+	      this.createFaceList(weekday, forecast),
+	      React.createElement(Face, { side: 'top' })
 	    );
 	  }
 	});
@@ -20111,8 +20134,10 @@
 	  displayName: 'Face',
 
 	  render: function render() {
+	    console.log('Weather', this.props.weather && this.props.weather.high && this.props.weather.high.celsius || '');
+	    var high = this.props.weather && this.props.weather.high && this.props.weather.high.celsius || '';
+	    var low = this.props.weather && this.props.weather.low && this.props.weather.low.celsius || '';
 	    var bgImage = this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/') || 'http://icons.wxug.com/i/c/e/chancerain.gif';
-	    console.log('Background', bgImage);
 	    return React.createElement(
 	      'div',
 	      { className: 'face ' + (this.props.side || 'backPanel'),
@@ -20120,8 +20145,18 @@
 	      },
 	      React.createElement(
 	        'h2',
-	        null,
+	        { className: 'temperature' },
 	        this.props.weekday
+	      ),
+	      React.createElement(
+	        'p',
+	        { className: 'temperature' },
+	        'High: ' + high
+	      ),
+	      React.createElement(
+	        'p',
+	        { className: 'temperature' },
+	        'Low: ' + low
 	      )
 	    );
 	  }
@@ -20146,11 +20181,16 @@
 	    var days = this.props.dayOrder;
 	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
 	    var weekday = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
-
+	    try {
+	      console.log('WeekDAY', weekday[days[0] * 2].title);
+	    } catch (e) {
+	      console.log(e);
+	    }
 	    return React.createElement(
 	      'div',
 	      {
-	        className: 'flatscreen',
+	        className: "flatscreen " + (!weekday ? "hidden" : ""),
+
 	        style: { 'transform': 'translate3d(' + this.props.sliderPosition + 'vw,0,-10vw)',
 	          'transition': 'transform ' + this.props.slideTime + 's'
 	        }
@@ -20193,14 +20233,14 @@
 	  render: function render() {
 	    var weekAhead = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
 
-	    console.log('Weather', weekAhead);
+	    // console.log('Weather', weekAhead)
 	    return React.createElement(
 	      'div',
-	      { className: 'projection' },
+	      { className: "projection " + (!weekAhead ? "hidden" : "") },
 	      React.createElement(
 	        'p',
 	        null,
-	        weekAhead && weekAhead[0].fcttext
+	        weekAhead && weekAhead[this.props.day].fcttext
 	      )
 	    );
 	  }
@@ -20218,7 +20258,7 @@
 	var logic = {
 
 	    jsonp: function jsonp(url, cbName, callback) {
-	        console.log('CALLBACK:', callback);
+	        // console.log('CALLBACK:',callback)
 	        var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
 	        window[callbackName] = function (data) {
 	            delete window[callbackName];
@@ -20237,10 +20277,10 @@
 	            return;
 	        }
 	        var city = locationData.name.replace(/,.+/, '').replace(/ /, '_');
-	        console.log('City', city);
+	        // console.log('City',city)
 	        var latLong = locationData.ll.replace(/ /, ',');
 	        var country = locationData.name.replace(/.+,/, '').trim().replace(/ /, '_') || locationData.c;
-	        console.log(locationData);
+	        // console.log(locationData)
 	        console.log(city + ' ' + country);
 	        var location = country + '/' + city;
 	        if (country.toUpperCase() === 'US') {
@@ -20260,7 +20300,7 @@
 
 	    get10dayForecast: function get10dayForecast(location) {
 	        var url = Constants.urls.forecast10day(location);
-	        console.log('URL: ', url);
+	        // console.log('URL: ', url)
 	        logic.jsonp(url, 'callback', logic.forecastData);
 	    },
 
@@ -20312,6 +20352,28 @@
 	};
 
 	module.exports = Constants;
+
+/***/ },
+/* 169 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+	var LocationPanel = React.createClass({
+	  displayName: "LocationPanel",
+
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      { className: "location-panel" },
+	      this.props.location
+	    );
+	  }
+	});
+
+	module.exports = LocationPanel;
 
 /***/ }
 /******/ ]);

@@ -2,7 +2,7 @@ var Constants = require('../Constants')
 var logic = {
 
     jsonp: function jsonp(url, cbName, callback ) {
-        console.log('CALLBACK:',callback)
+        // console.log('CALLBACK:',callback)
         var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
         window[callbackName] = function(data) {
             delete window[callbackName];
@@ -21,10 +21,10 @@ var logic = {
             return
         }
         var city = locationData.name.replace(/,.+/,'').replace(/ /,'_');
-        console.log('City',city)
+        // console.log('City',city)
         var latLong = locationData.ll.replace(/ /,',')
         var country = locationData.name.replace(/.+,/,'').trim().replace(/ /,'_') || locationData.c;
-        console.log(locationData)
+        // console.log(locationData)
         console.log(city + ' ' + country);
         var location = country + '/' + city;
         if(country.toUpperCase() === 'US'){
@@ -45,7 +45,7 @@ var logic = {
 
     get10dayForecast: function get10dayForecast(location){
         var url = Constants.urls.forecast10day(location)
-        console.log('URL: ', url)
+        // console.log('URL: ', url)
         logic.jsonp(url, 'callback', logic.forecastData )
     },
 
