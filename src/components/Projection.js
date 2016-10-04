@@ -8,7 +8,6 @@ var Projection = React.createClass({
     this.props.weather.txt_forecast &&
     this.props.weather.txt_forecast.forecastday
 
-    // console.log('Weather', weekAhead)
     return (
       <div className={"projection " + (!weekAhead ? "hidden" : "")}>
         <p >{weekAhead && weekAhead[this.props.day].fcttext}</p>

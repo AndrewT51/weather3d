@@ -49,7 +49,7 @@
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
 	var WeatherApp = __webpack_require__(159);
-	var Constants = __webpack_require__(168);
+	var Constants = __webpack_require__(169);
 
 	ReactDOM.render(React.createElement(WeatherApp, { constants: Constants }), document.getElementById('a'));
 
@@ -19739,8 +19739,8 @@
 	var ReactDOM = __webpack_require__(158);
 	var MenuBar = __webpack_require__(160);
 	var PerspectiveContext = __webpack_require__(162);
-	var LocationPanel = __webpack_require__(169);
-	var jsonp = __webpack_require__(167);
+	var LocationPanel = __webpack_require__(167);
+	var jsonp = __webpack_require__(168);
 
 	var AppWindow = React.createClass({
 	  displayName: 'AppWindow',
@@ -20134,7 +20134,6 @@
 	  displayName: 'Face',
 
 	  render: function render() {
-	    console.log('Weather', this.props.weather && this.props.weather.high && this.props.weather.high.celsius || '');
 	    var high = this.props.weather && this.props.weather.high && this.props.weather.high.celsius || '';
 	    var low = this.props.weather && this.props.weather.low && this.props.weather.low.celsius || '';
 	    var bgImage = this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/') || 'http://icons.wxug.com/i/c/e/chancerain.gif';
@@ -20177,12 +20176,23 @@
 	var Flatscreen = React.createClass({
 	  displayName: 'Flatscreen',
 
+	  faceList: function faceList(fc, wd) {
+	    var days = this.props.dayOrder;
+	    var list = [];
+	    for (var i = 1; i <= 4; i++) {
+	      list.push(React.createElement(Face, {
+	        weather: fc && fc[days[i]],
+	        weekday: wd && wd[days[i] * 2].title,
+	        key: i
+	      }));
+	    }
+	    return list;
+	  },
 	  render: function render() {
 	    var days = this.props.dayOrder;
-	    var forecast = this.props.weather && this.props.weather.simpleforecast && this.props.weather.simpleforecast.forecastday;
-	    var weekday = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
 	    try {
-	      console.log('WeekDAY', weekday[days[0] * 2].title);
+	      var forecast = this.props.weather.simpleforecast.forecastday;
+	      var weekday = this.props.weather.txt_forecast.forecastday;
 	    } catch (e) {
 	      console.log(e);
 	    }
@@ -20190,27 +20200,10 @@
 	      'div',
 	      {
 	        className: "flatscreen " + (!weekday ? "hidden" : ""),
-
 	        style: { 'transform': 'translate3d(' + this.props.sliderPosition + 'vw,0,-10vw)',
 	          'transition': 'transform ' + this.props.slideTime + 's'
-	        }
-	      },
-	      React.createElement(Face, {
-	        weather: forecast && forecast[days[1]],
-	        weekday: weekday && weekday[days[1] * 2].title
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[days[2]],
-	        weekday: weekday && weekday[days[2] * 2].title
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[days[3]],
-	        weekday: weekday && weekday[days[3] * 2].title
-	      }),
-	      React.createElement(Face, {
-	        weather: forecast && forecast[days[4]],
-	        weekday: weekday && weekday[days[4] * 2].title
-	      })
+	        } },
+	      this.faceList(forecast, weekday)
 	    );
 	  }
 	});
@@ -20233,7 +20226,6 @@
 	  render: function render() {
 	    var weekAhead = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
 
-	    // console.log('Weather', weekAhead)
 	    return React.createElement(
 	      'div',
 	      { className: "projection " + (!weekAhead ? "hidden" : "") },
@@ -20252,9 +20244,31 @@
 /* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+	var LocationPanel = React.createClass({
+	  displayName: "LocationPanel",
+
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      { className: "location-panel" },
+	      this.props.location
+	    );
+	  }
+	});
+
+	module.exports = LocationPanel;
+
+/***/ },
+/* 168 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
-	var Constants = __webpack_require__(168);
+	var Constants = __webpack_require__(169);
 	var logic = {
 
 	    jsonp: function jsonp(url, cbName, callback) {
@@ -20328,7 +20342,7 @@
 	module.exports = logic;
 
 /***/ },
-/* 168 */
+/* 169 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -20352,28 +20366,6 @@
 	};
 
 	module.exports = Constants;
-
-/***/ },
-/* 169 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-
-	var LocationPanel = React.createClass({
-	  displayName: "LocationPanel",
-
-	  render: function render() {
-	    return React.createElement(
-	      "div",
-	      { className: "location-panel" },
-	      this.props.location
-	    );
-	  }
-	});
-
-	module.exports = LocationPanel;
 
 /***/ }
 /******/ ]);

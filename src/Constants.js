@@ -1,5 +1,5 @@
 var Constants = {
-  API_KEY: process.env.WUNDERGROUND_API,
+  API_KEY: 'dca680da44d3f5a3',
   urls:{
     autoIp: function autoIp(){
       return 'http://api.wunderground.com/api/'+ Constants.API_KEY + '/geolookup/q/autoip.json'
