@@ -11,11 +11,14 @@ var AppWindow = React.createClass({
       forecast:{},
       cubeRotation:0, 
       sliderPosition: 0,
-      dayOrder: [0,1,2,3,4,5,6],
+      dayOrder: [0,6,5,4,3,2,1],
       cubeDays: [0,1,2,6],
       faceChangePointer: 2,
       slideTime: 1,
-      location: ''
+      location: '',
+      moving: false,
+      loaded: false,
+      celsius: true
     }
   },
   getLocation: function getLocation(data){
@@ -36,23 +39,26 @@ var AppWindow = React.createClass({
   },
 
   autoLocateIP: function autoLocateIP(data){
-    var nearestWeatherStation = data.location &&
-      data.location.nearby_weather_stations &&
-      data.location.nearby_weather_stations.pws &&
-      data.location.nearby_weather_stations.pws.station &&
-      data.location.nearby_weather_stations.pws.station[0];
+    this.setState({loaded: false})
+    try {
+      var nearestWeatherStation = data.location.nearby_weather_stations.pws.station[0];
+    } catch (e){
+      console.log(e)
+    }
     var url = this.props.constants.urls.autoComplete(nearestWeatherStation.city,nearestWeatherStation.country);
     jsonp.jsonp(url, 'cb', this.getLocation);
   },
 
   forecastData: function forecastData(data){
+    console.log(data.forecast)
       this.setState({
-        forecast: data.forecast
+        forecast: data.forecast,
+        loaded:true
       })
   },
 
   get10dayForecast: function get10dayForecast(location){
-
+      this.setState({loaded: false})
       var url = this.props.constants.urls.forecast10day(location)
       jsonp.jsonp(url, 'callback', this.forecastData )
   },
@@ -99,31 +105,37 @@ var AppWindow = React.createClass({
     setTimeout(function(){
       if(clockwise){
         degrees = 90
-        element = tempArr.pop();
-        tempArr.unshift(element)
+        element = tempArr.shift();
+        tempArr.push(element)
         this.slide()
       }else{
         degrees = -90
-        element = tempArr.shift();
-        tempArr.push(element)
+        element = tempArr.pop();
+        tempArr.unshift(element)
         this.slide(true)
       }
       this.setState({
         dayOrder: tempArr,
-        slideTime: 0
+        slideTime: 0,
+        moving: false
       })
     }.bind(this), this.state.slideTime ? this.state.slideTime * 1000 : 1000)
     this.setState({
       cubeRotation: this.state.cubeRotation + degrees,
-      slideTime: 1
+      slideTime: 1,
+      moving: true
     })
   },
 
   slide: function(moveRight){
-    var position = moveRight ? 20 : -20
+    var position = moveRight ? -20 : 20
     this.setState({
       sliderPosition: this.state.sliderPosition + position
     })
+  },
+
+  switchUnits: function(){
+    this.setState({ celsius: !this.state.celsius })
   },
 
   render: function(){
@@ -135,19 +147,23 @@ var AppWindow = React.createClass({
           getLocation={this.getLocation}
           autoLocateIP={this.autoLocateIP}
           constants={this.props.constants} 
-          rotate={this.rotate}
-          slide={this.slide}
         />
         <PerspectiveContext
-          className={this.state.location ? "hidden" : ""}
+          moving={this.state.moving}
+          loaded={this.state.loaded}
           cubeDays={this.state.cubeDays}
           dayOrder={this.state.dayOrder}
           cubeRotation={this.state.cubeRotation}
           sliderPosition={this.state.sliderPosition}
           forecast={this.state.forecast} 
           slideTime={this.state.slideTime}
+          rotate={this.rotate}
+          slide={this.slide}
+          celsius={this.state.celsius}
+          switchUnits={this.switchUnits}
         />
         <LocationPanel 
+          loaded={this.state.loaded}
           location={this.state.location}
         />
       </div>

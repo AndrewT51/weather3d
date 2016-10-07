@@ -19750,11 +19750,14 @@
 	      forecast: {},
 	      cubeRotation: 0,
 	      sliderPosition: 0,
-	      dayOrder: [0, 1, 2, 3, 4, 5, 6],
+	      dayOrder: [0, 6, 5, 4, 3, 2, 1],
 	      cubeDays: [0, 1, 2, 6],
 	      faceChangePointer: 2,
 	      slideTime: 1,
-	      location: ''
+	      location: '',
+	      moving: false,
+	      loaded: false,
+	      celsius: true
 	    };
 	  },
 	  getLocation: function getLocation(data) {
@@ -19775,19 +19778,26 @@
 	  },
 
 	  autoLocateIP: function autoLocateIP(data) {
-	    var nearestWeatherStation = data.location && data.location.nearby_weather_stations && data.location.nearby_weather_stations.pws && data.location.nearby_weather_stations.pws.station && data.location.nearby_weather_stations.pws.station[0];
+	    this.setState({ loaded: false });
+	    try {
+	      var nearestWeatherStation = data.location.nearby_weather_stations.pws.station[0];
+	    } catch (e) {
+	      console.log(e);
+	    }
 	    var url = this.props.constants.urls.autoComplete(nearestWeatherStation.city, nearestWeatherStation.country);
 	    jsonp.jsonp(url, 'cb', this.getLocation);
 	  },
 
 	  forecastData: function forecastData(data) {
+	    console.log(data.forecast);
 	    this.setState({
-	      forecast: data.forecast
+	      forecast: data.forecast,
+	      loaded: true
 	    });
 	  },
 
 	  get10dayForecast: function get10dayForecast(location) {
-
+	    this.setState({ loaded: false });
 	    var url = this.props.constants.urls.forecast10day(location);
 	    jsonp.jsonp(url, 'callback', this.forecastData);
 	  },
@@ -19834,31 +19844,37 @@
 	    setTimeout(function () {
 	      if (clockwise) {
 	        degrees = 90;
-	        element = tempArr.pop();
-	        tempArr.unshift(element);
+	        element = tempArr.shift();
+	        tempArr.push(element);
 	        this.slide();
 	      } else {
 	        degrees = -90;
-	        element = tempArr.shift();
-	        tempArr.push(element);
+	        element = tempArr.pop();
+	        tempArr.unshift(element);
 	        this.slide(true);
 	      }
 	      this.setState({
 	        dayOrder: tempArr,
-	        slideTime: 0
+	        slideTime: 0,
+	        moving: false
 	      });
 	    }.bind(this), this.state.slideTime ? this.state.slideTime * 1000 : 1000);
 	    this.setState({
 	      cubeRotation: this.state.cubeRotation + degrees,
-	      slideTime: 1
+	      slideTime: 1,
+	      moving: true
 	    });
 	  },
 
 	  slide: function slide(moveRight) {
-	    var position = moveRight ? 20 : -20;
+	    var position = moveRight ? -20 : 20;
 	    this.setState({
 	      sliderPosition: this.state.sliderPosition + position
 	    });
+	  },
+
+	  switchUnits: function switchUnits() {
+	    this.setState({ celsius: !this.state.celsius });
 	  },
 
 	  render: function render() {
@@ -19870,20 +19886,24 @@
 	        jsonp: jsonp,
 	        getLocation: this.getLocation,
 	        autoLocateIP: this.autoLocateIP,
-	        constants: this.props.constants,
-	        rotate: this.rotate,
-	        slide: this.slide
+	        constants: this.props.constants
 	      }),
 	      React.createElement(PerspectiveContext, {
-	        className: this.state.location ? "hidden" : "",
+	        moving: this.state.moving,
+	        loaded: this.state.loaded,
 	        cubeDays: this.state.cubeDays,
 	        dayOrder: this.state.dayOrder,
 	        cubeRotation: this.state.cubeRotation,
 	        sliderPosition: this.state.sliderPosition,
 	        forecast: this.state.forecast,
-	        slideTime: this.state.slideTime
+	        slideTime: this.state.slideTime,
+	        rotate: this.rotate,
+	        slide: this.slide,
+	        celsius: this.state.celsius,
+	        switchUnits: this.switchUnits
 	      }),
 	      React.createElement(LocationPanel, {
+	        loaded: this.state.loaded,
 	        location: this.state.location
 	      })
 	    );
@@ -19905,14 +19925,7 @@
 	var MenuBar = React.createClass({
 	  displayName: 'MenuBar',
 
-	  handleNext: function handleNext() {
-	    this.props.rotate();
-	    this.props.slide();
-	  },
-	  handlePrev: function handlePrev() {
-	    this.props.rotate(true);
-	    this.props.slide(true);
-	  },
+
 	  render: function render() {
 	    return React.createElement(
 	      'div',
@@ -19922,18 +19935,11 @@
 	        jsonp: this.props.jsonp,
 	        autoLocateIP: this.props.autoLocateIP,
 	        getLocation: this.props.getLocation,
-	        constants: this.props.constants
-	      }),
-	      React.createElement(
-	        'button',
-	        { onClick: this.handleNext },
-	        'Next'
-	      ),
-	      React.createElement(
-	        'button',
-	        { onClick: this.handlePrev },
-	        'Prev'
-	      )
+	        constants: this.props.constants,
+	        rotate: this.props.rotate,
+	        slide: this.props.slide,
+	        moving: this.props.moving
+	      })
 	    );
 	  }
 	});
@@ -19957,9 +19963,23 @@
 	      value: ''
 	    };
 	  },
+	  handleNext: function handleNext() {
+	    if (this.props.moving === true) {
+	      return;
+	    }
+	    this.props.rotate();
+	    this.props.slide();
+	  },
+	  handlePrev: function handlePrev() {
+	    if (this.props.moving === true) {
+	      return;
+	    }
+	    this.setState({ animationInMotion: true });
+	    this.props.rotate(true);
+	    this.props.slide(true);
+	  },
 	  autoLocateIP: function autoLocateIP() {
 	    var url = this.props.constants.urls.autoIp();
-	    console.log('url', url);
 	    this.props.jsonp.jsonp(url, 'callback', this.props.autoLocateIP);
 	  },
 	  handleChange: function handleChange(evt) {
@@ -19987,10 +20007,18 @@
 	        React.createElement(
 	          'button',
 	          {
-	            className: 'btn btn-default',
+	            className: 'btn btn-secondary',
 	            onClick: this.handleClick,
 	            type: 'button' },
 	          'Get forecast'
+	        ),
+	        React.createElement(
+	          'button',
+	          {
+	            className: 'btn btn-secondary',
+	            onClick: this.autoLocateIP,
+	            type: 'button' },
+	          React.createElement('span', { className: 'fa fa-location-arrow' })
 	        )
 	      ),
 	      React.createElement('input', {
@@ -19999,19 +20027,7 @@
 	        onChange: this.handleChange,
 	        className: 'form-control',
 	        placeholder: 'Current location'
-	      }),
-	      React.createElement(
-	        'span',
-	        { className: 'input-group-btn' },
-	        React.createElement(
-	          'button',
-	          {
-	            className: 'btn btn-default',
-	            onClick: this.autoLocateIP,
-	            type: 'button' },
-	          React.createElement('span', { className: 'fa fa-location-arrow' })
-	        )
-	      )
+	      })
 	    );
 	  }
 	});
@@ -20037,24 +20053,31 @@
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      { className: 'context' },
+	      { className: this.props.loaded ? 'context active' : 'context' },
 	      React.createElement('div', { className: 'frontscreen' }),
 	      React.createElement(Cube, {
 	        cubeRotation: this.props.cubeRotation,
 	        cubeDays: this.props.cubeDays,
 	        weather: this.props.forecast,
 	        dayOrder: this.props.dayOrder,
-	        slideTime: this.props.slideTime
+	        slideTime: this.props.slideTime,
+	        celsius: this.props.celsius
 	      }),
 	      React.createElement(Flatscreen, {
+	        celsius: this.props.celsius,
 	        dayOrder: this.props.dayOrder,
 	        sliderPosition: this.props.sliderPosition,
 	        weather: this.props.forecast,
 	        slideTime: this.props.slideTime
 	      }),
 	      React.createElement(Projection, {
+	        rotate: this.props.rotate,
+	        slide: this.props.slide,
+	        moving: this.props.moving,
 	        day: this.props.dayOrder[0] * 2,
-	        weather: this.props.forecast
+	        weather: this.props.forecast,
+	        celsius: this.props.celsius,
+	        switchUnits: this.props.switchUnits
 	      })
 	    );
 	  }
@@ -20083,6 +20106,7 @@
 	  createFaceList: function createFaceList(weekday, forecast) {
 	    return this.state.sides.map(function (element, index) {
 	      return React.createElement(Face, {
+	        celsius: this.props.celsius,
 	        side: element,
 	        weather: forecast && forecast[this.props.cubeDays[index]],
 	        weekday: weekday && weekday[this.props.cubeDays[index] * 2].title,
@@ -20134,8 +20158,14 @@
 	  displayName: 'Face',
 
 	  render: function render() {
-	    var high = this.props.weather && this.props.weather.high && this.props.weather.high.celsius || '';
-	    var low = this.props.weather && this.props.weather.low && this.props.weather.low.celsius || '';
+	    var unitSymbol = '℉';
+	    var unit = 'fahrenheit';
+	    if (this.props.celsius) {
+	      unitSymbol = '℃';
+	      unit = 'celsius';
+	    }
+	    var high = this.props.weather && this.props.weather.high && this.props.weather.high[unit] || '';
+	    var low = this.props.weather && this.props.weather.low && this.props.weather.low[unit] || '';
 	    var bgImage = this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/') || 'http://icons.wxug.com/i/c/e/chancerain.gif';
 	    return React.createElement(
 	      'div',
@@ -20143,19 +20173,27 @@
 	        style: { 'backgroundImage': 'url("' + bgImage + '")' }
 	      },
 	      React.createElement(
-	        'h2',
-	        { className: 'temperature' },
-	        this.props.weekday
-	      ),
-	      React.createElement(
-	        'p',
-	        { className: 'temperature' },
-	        'High: ' + high
-	      ),
-	      React.createElement(
-	        'p',
-	        { className: 'temperature' },
-	        'Low: ' + low
+	        'div',
+	        { className: 'cover' },
+	        React.createElement(
+	          'h2',
+	          { className: 'temperature' },
+	          this.props.weekday
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'temp-container' },
+	          React.createElement(
+	            'p',
+	            { className: 'temperature temp-high' },
+	            high + unitSymbol
+	          ),
+	          React.createElement(
+	            'p',
+	            { className: 'temperature temp-low' },
+	            low + unitSymbol
+	          )
+	        )
 	      )
 	    );
 	  }
@@ -20183,6 +20221,7 @@
 	      list.push(React.createElement(Face, {
 	        weather: fc && fc[days[i]],
 	        weekday: wd && wd[days[i] * 2].title,
+	        celsius: this.props.celsius,
 	        key: i
 	      }));
 	    }
@@ -20222,17 +20261,65 @@
 	var Projection = React.createClass({
 	  displayName: 'Projection',
 
+	  handleNext: function handleNext() {
+	    if (this.props.moving === true) {
+	      return;
+	    }
+	    this.props.rotate();
+	    this.props.slide();
+	  },
+	  handlePrev: function handlePrev() {
+	    if (this.props.moving === true) {
+	      return;
+	    }
+	    this.setState({ animationInMotion: true });
+	    this.props.rotate(true);
+	    this.props.slide(true);
+	  },
 
 	  render: function render() {
 	    var weekAhead = this.props.weather && this.props.weather.txt_forecast && this.props.weather.txt_forecast.forecastday;
-
+	    console.log(weekAhead);
+	    console.log(this.props.day);
 	    return React.createElement(
 	      'div',
 	      { className: "projection " + (!weekAhead ? "hidden" : "") },
 	      React.createElement(
+	        'div',
+	        { className: 'input-group changeday' },
+	        React.createElement(
+	          'span',
+	          { className: 'input-group-btn' },
+	          React.createElement(
+	            'button',
+	            {
+	              onClick: this.props.switchUnits,
+	              type: 'button',
+	              className: 'btn btn-secondary' },
+	            this.props.celsius ? '℉' : '℃'
+	          ),
+	          React.createElement(
+	            'button',
+	            {
+	              onClick: this.handlePrev,
+	              type: 'button',
+	              className: 'btn btn-secondary' },
+	            React.createElement('span', { className: 'fa fa-arrow-left' })
+	          ),
+	          React.createElement(
+	            'button',
+	            {
+	              onClick: this.handleNext,
+	              type: 'button',
+	              className: 'btn btn-secondary' },
+	            React.createElement('span', { className: 'fa fa-arrow-right' })
+	          )
+	        )
+	      ),
+	      React.createElement(
 	        'p',
 	        null,
-	        weekAhead && weekAhead[this.props.day].fcttext
+	        weekAhead && weekAhead[this.props.day][this.props.celsius ? 'fcttext_metric' : 'fcttext']
 	      )
 	    );
 	  }
@@ -20244,17 +20331,17 @@
 /* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	var React = __webpack_require__(1);
 
 	var LocationPanel = React.createClass({
-	  displayName: "LocationPanel",
+	  displayName: 'LocationPanel',
 
 	  render: function render() {
 	    return React.createElement(
-	      "div",
-	      { className: "location-panel" },
+	      'div',
+	      { className: this.props.loaded ? 'location-panel active' : 'location-panel' },
 	      this.props.location
 	    );
 	  }

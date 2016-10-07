@@ -4,12 +4,22 @@ var ReactDOM = require('react-dom');
 var InputLocation = React.createClass({
   getInitialState: function(){
     return {
-      value: ''
+      value: '',
     }
+  },
+  handleNext: function(){
+    if(this.props.moving === true ) { return }
+    this.props.rotate()
+    this.props.slide()
+  },
+  handlePrev: function(){
+    if(this.props.moving === true ) { return }
+    this.setState({animationInMotion: true})
+    this.props.rotate(true)
+    this.props.slide(true)
   },
   autoLocateIP: function autoLocateIP(){
     var url = this.props.constants.urls.autoIp()
-    console.log('url', url)
     this.props.jsonp.jsonp(url, 'callback', this.props.autoLocateIP)
   },
   handleChange: function(evt){
@@ -32,10 +42,16 @@ var InputLocation = React.createClass({
       <div className="input-group col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
           <span className="input-group-btn">
             <button 
-              className="btn btn-default" 
+              className="btn btn-secondary" 
               onClick={this.handleClick} 
               type="button">
               Get forecast
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={this.autoLocateIP}
+              type="button">
+              <span className="fa fa-location-arrow"></span>
             </button>
           </span>
           <input 
@@ -45,14 +61,7 @@ var InputLocation = React.createClass({
             className="form-control" 
             placeholder="Current location" 
           />
-          <span className="input-group-btn">
-            <button 
-              className="btn btn-default"
-              onClick={this.autoLocateIP}
-              type="button">
-              <span className="fa fa-location-arrow"></span>
-            </button>
-          </span>
+       
       </div>
     )
   }

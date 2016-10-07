@@ -12,6 +12,7 @@ var Cube = React.createClass({
     return this.state.sides.map(function(element, index){
       return ( 
         <Face 
+          celsius={this.props.celsius}
           side={element}
           weather={forecast && forecast[this.props.cubeDays[index]]}
           weekday={weekday && weekday[(this.props.cubeDays[index] * 2)].title}

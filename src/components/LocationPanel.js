@@ -3,7 +3,7 @@ var React = require('react');
 var LocationPanel = React.createClass({
   render: function(){
     return (
-      <div className="location-panel">
+      <div className={this.props.loaded ? 'location-panel active' : 'location-panel'}>
         {this.props.location}
       </div>
     )

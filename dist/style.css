@@ -9,7 +9,7 @@ p {
 }
 
 h2{
-  font-size:1.2em;
+  font-size:20px;
 }
 
 .app-window {
@@ -32,6 +32,12 @@ h2{
   perspective: 900px;
   perspective-origin: 0% 100%;
   animation: wobble 10s linear infinite alternate ;
+  opacity: 0;
+  transition: opacity 4s;
+}
+
+.context.active {
+  opacity: 1;
 }
 
 @keyframes wobble {
@@ -46,6 +52,8 @@ h2{
   transform-style: preserve-3d;
   width:20vw;
   height:30vh;
+  min-height:calc(30vw * 0.8);
+  min-width:calc(20vh * 0.8);
   margin-top: 25vh;
   margin-left: 15vw;
  
@@ -55,8 +63,9 @@ h2{
   transition: transform 2s;
 }
 
-
 .face {
+  font-size: 4vw;
+  font-family: 'Luckiest Guy';
   border: 4px solid #49629C;
   position:fixed;
   width:100%;
@@ -65,8 +74,8 @@ h2{
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden; /* Chrome, Safari, Opera */
+  min-height: calc(30vw * 0.8);
+  min-width: calc(20vh * 0.8);
 
 }
 
@@ -78,7 +87,6 @@ h2{
   background-color: rgba(73, 98, 156,0.5);
   transform: rotateY(90deg) translateX(50%) rotateY(90deg);
 }
-
 
 .right {
   background-color: rgba(73, 98, 156,0.5);
@@ -94,6 +102,8 @@ h2{
   /*width:100%;*/
   height: 20vw;
   width: 20vw;
+  min-height:calc(20vh * 0.8);
+  min-width:calc(20vh * 0.8);
   background-color: rgba(73, 98, 156,0.5);
   transform: translateY(-50%) rotateX(90deg); 
 }
@@ -104,6 +114,7 @@ h2{
   background-color: rgba(73, 98, 156,0.5);
   transform: translate3d(0,0,-10vw);
   z-index: -1;
+  overflow: hidden;
 
 }
 .frontscreen {
@@ -114,6 +125,7 @@ h2{
   background-image:linear-gradient(to right, #9aadd8 18%, transparent 19%, #9aadd8 60%);
   width:140vw;
   height:34vh;
+  min-height:calc(34vw * 0.8);
   margin-top: 25vh;
   margin-left: 15vw;
 }
@@ -122,23 +134,20 @@ h2{
   position:absolute;
   margin-top: 25vh;
   margin-left: 15vw;
+  padding: 30px 2px;
   font-family: 'Handlee', cursive;
   border: 4px solid #222;
   color: white;
   border-radius: 10px;
   transform: translate3d(35vw,-12vh,0);
   width: 40vw;
+  max-width: 300px;
   /*height: 55vh;*/
   background-color: rgba(20, 20, 20,0.7) ;
 }
 
-/*box-sizing: border-box;
-transform-style: preserve-3d;
-width:20vw;
-height:30vh;*/
-
 .projection>p {
-  margin: 7px;
+  margin: 10px 7px;
   font-size: 20px;
 }
 
@@ -155,7 +164,8 @@ height:30vh;*/
   position: relative;
   display: inline-block;
   width: 20vw;
-  background-color: rgba(73, 98, 156,0.5);
+  background-color: rgba(73, 98, 156,0.2);
+  transform: rotateY(180deg);
   z-index: -1;
 }
 
@@ -164,19 +174,46 @@ height:30vh;*/
   left: 20px;
   top: 60px;
   font-size: 2em;
+  font-family: 'Averia Serif Libre';
+  opacity: 0;
+  transition: opacity 4s;
+}
 
+.location-panel.active {
+  opacity: 1;
 }
 
 h2.temperature {
-  font-size: 2em;
+  padding-top: 5%;
+  color: #f1c235;
+  text-decoration: underline;
+  font-size: 3vw;
   padding-bottom: 3px;
-  background-color: rgba(250,200,200,.3);
 }
 
 .temperature {
-  font-size: 1.5em;
+  text-shadow: 2px 2px 0 black;
   text-align: center;
-  font-weight: bold;
+}
+
+.temp-low {
+  color: #4f4ff7;
+}
+
+.temp-high {
+  color: #da0000;
+}
+
+.temp-container {
+  width: 100%;
+  height: 70%;
+  margin-top: 15%;
+}
+
+.cover {
+  width:100%;
+  height: 100%;
+  background-color: rgba(163, 174, 195, 0.38);
 }
 
 
@@ -184,38 +221,40 @@ h2.temperature {
   width:100%;
   height:100%;
 }
-.hidden {
-  display: none;
-  visibility: hidden;
-} 
-/* Extra small devices (phones, up to 480px) */
-/*@media screen and (max-width: 767px) {
-  .projection>p {
-    font-size: 12px;
-  }
-}*/
-/* Small devices (tablets, 768px and up) */
-@media (min-width: 850px) and (max-width: 991px) {
-  p,h2{
-    font-size: 1.4em;
-    
-  }
 
+.hidden.h {
+  opacity: 1;
+  transition: opacity 4s;
+} 
+.hidden {
+  opacity:0;
 }
-/* tablets/desktops and up ----------- */
-@media (min-width: 992px) and (max-width: 1199px) {
-  p,h2{
-    font-size: 3em;
-  }
-  
+
+.changeday {
+  text-align: right;
+  display:block;
+  position: fixed;
+  top: 0;
+  right:0;
 }
-/* large desktops and up ----------- */
-@media screen and (min-width: 1200px) {
-  p,h2{
-   font-size: 3.5em;
- }
-  
+
+.input-group-btn:last-child>.btn:last-child{  
+  border-top-right-radius: 6px;
 }
+
+.changeday > .input-group-btn >.btn {
+  border: 1px transparent solid;
+  background-color: #999a9c
+}
+
+.changeday > .input-group-btn >.btn:active,
+.changeday > .input-group-btn >.btn:visited,
+.changeday > .input-group-btn >.btn:hover,
+.changeday > .input-group-btn >.btn:focus{
+  outline: none;
+}
+
+
 
 
 

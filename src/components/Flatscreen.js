@@ -10,6 +10,7 @@ var Flatscreen = React.createClass({
         list.push(<Face 
           weather={fc && fc[days[i]]}
           weekday={wd && wd[(days[i] * 2)].title}
+          celsius={this.props.celsius}
           key={i}
         />)
       }
