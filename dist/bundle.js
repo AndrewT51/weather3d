@@ -20166,7 +20166,7 @@
 	    }
 	    var high = this.props.weather && this.props.weather.high && this.props.weather.high[unit] || '';
 	    var low = this.props.weather && this.props.weather.low && this.props.weather.low[unit] || '';
-	    var bgImage = this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/') || 'http://icons.wxug.com/i/c/e/chancerain.gif';
+	    var bgImage = this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/') || 'https://icons.wxug.com/i/c/e/chancerain.gif';
 	    return React.createElement(
 	      'div',
 	      { className: 'face ' + (this.props.side || 'backPanel'),
