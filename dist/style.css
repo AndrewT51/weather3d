@@ -29,10 +29,14 @@ h2{
   position: relative;
   width: 100%;
   height: 10%;
-  perspective: 900px;
-  perspective-origin: 0% 100%;
-  animation: wobble 10s linear infinite alternate ;
+  -webkit-perspective: 900px;
+          perspective: 900px;
+  -webkit-perspective-origin: 0% 100%;
+          perspective-origin: 0% 100%;
+  -webkit-animation: wobble 10s linear infinite alternate ;
+          animation: wobble 10s linear infinite alternate ;
   opacity: 0;
+  -webkit-transition: opacity 4s;
   transition: opacity 4s;
 }
 
@@ -40,16 +44,23 @@ h2{
   opacity: 1;
 }
 
+@-webkit-keyframes wobble {
+  0% {-webkit-perspective-origin: 50% 100%;perspective-origin: 50% 100%;}
+  50% {-webkit-perspective-origin: 30% 50%;perspective-origin: 30% 50%;}
+  100% {-webkit-perspective-origin: 60% 60%;perspective-origin: 60% 60%;}
+}
+
 @keyframes wobble {
-  0% {perspective-origin: 50% 100%;}
-  50% {perspective-origin: 30% 50%;}
-  100% {perspective-origin: 60% 60%;}
+  0% {-webkit-perspective-origin: 50% 100%;perspective-origin: 50% 100%;}
+  50% {-webkit-perspective-origin: 30% 50%;perspective-origin: 30% 50%;}
+  100% {-webkit-perspective-origin: 60% 60%;perspective-origin: 60% 60%;}
 }
 
 .cube, .flatscreen {
   box-sizing: border-box;
   position:absolute;
-  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+          transform-style: preserve-3d;
   width:20vw;
   height:30vh;
   min-height:calc(30vw * 0.8);
@@ -60,7 +71,10 @@ h2{
 }
 
 .cube {
+  -webkit-transition: -webkit-transform 2s;
+  transition: -webkit-transform 2s;
   transition: transform 2s;
+  transition: transform 2s, -webkit-transform 2s;
 }
 
 .face {
@@ -81,21 +95,25 @@ h2{
 
 .front {
   background-color: rgba(73, 98, 156,0.5);
-  transform: rotateY(90deg) translateX(-50%) rotateY(-90deg);
+  -webkit-transform: rotateY(90deg) translateX(-50%) rotateY(-90deg);
+          transform: rotateY(90deg) translateX(-50%) rotateY(-90deg);
 }
 .back {
   background-color: rgba(73, 98, 156,0.5);
-  transform: rotateY(90deg) translateX(50%) rotateY(90deg);
+  -webkit-transform: rotateY(90deg) translateX(50%) rotateY(90deg);
+          transform: rotateY(90deg) translateX(50%) rotateY(90deg);
 }
 
 .right {
   background-color: rgba(73, 98, 156,0.5);
-  transform: translateX(50%) rotateY(90deg); 
+  -webkit-transform: translateX(50%) rotateY(90deg);
+          transform: translateX(50%) rotateY(90deg); 
 }
 
 .left {
   background-color: rgba(73, 98, 156,0.5);
-  transform: translateX(-50%) rotateY(270deg); 
+  -webkit-transform: translateX(-50%) rotateY(270deg);
+          transform: translateX(-50%) rotateY(270deg); 
 }
 
 .top {
@@ -105,14 +123,17 @@ h2{
   min-height:calc(20vh * 0.8);
   min-width:calc(20vh * 0.8);
   background-color: rgba(73, 98, 156,0.5);
-  transform: translateY(-50%) rotateX(90deg); 
+  -webkit-transform: translateY(-50%) rotateX(90deg);
+          transform: translateY(-50%) rotateX(90deg); 
 }
 
 .flatscreen {
-  transform-style: flat;
+  -webkit-transform-style: flat;
+          transform-style: flat;
   width: 80vw;
   background-color: rgba(73, 98, 156,0.5);
-  transform: translate3d(0,0,-10vw);
+  -webkit-transform: translate3d(0,0,-10vw);
+          transform: translate3d(0,0,-10vw);
   z-index: -1;
   overflow: hidden;
 
@@ -120,9 +141,12 @@ h2{
 .frontscreen {
   box-sizing: border-box;
   position:absolute;
-  transform-style: preserve-3d;
-  transform: translate3d(-20vw,-2vh,-10vw);
-  background-image:linear-gradient(to right, #9aadd8 18%, transparent 19%, #9aadd8 60%);
+  -webkit-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+  -webkit-transform: translate3d(-20vw,-2vh,-10vw);
+          transform: translate3d(-20vw,-2vh,-10vw);
+  background-image:-webkit-linear-gradient(left, #9aadd8 18%, transparent 19%, #9aadd8 60%);
+  background-image:linear-gradient(to right, #9aadd8 18%, rgba(161, 161, 161, 0) 19%, #9aadd8 60%);
   width:140vw;
   height:34vh;
   min-height:calc(34vw * 0.8);
@@ -139,7 +163,8 @@ h2{
   border: 4px solid #222;
   color: white;
   border-radius: 10px;
-  transform: translate3d(35vw,-12vh,0);
+  -webkit-transform: translate3d(35vw,-12vh,0);
+          transform: translate3d(35vw,-12vh,0);
   width: 40vw;
   max-width: 300px;
   /*height: 55vh;*/
@@ -151,6 +176,11 @@ h2{
   font-size: 20px;
 }
 
+.projection .btn {
+  padding: 0 7px;
+  font-size: 1.5rem;
+}
+
 .btn {
   background-color: #C7D3EE;
 }
@@ -160,12 +190,14 @@ h2{
 }
 
 .backPanel {
-  transform-style: flat;
+  -webkit-transform-style: flat;
+          transform-style: flat;
   position: relative;
   display: inline-block;
   width: 20vw;
   background-color: rgba(73, 98, 156,0.2);
-  transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
+          transform: rotateY(180deg);
   z-index: -1;
 }
 
@@ -176,6 +208,7 @@ h2{
   font-size: 2em;
   font-family: 'Averia Serif Libre';
   opacity: 0;
+  -webkit-transition: opacity 4s;
   transition: opacity 4s;
 }
 
@@ -192,7 +225,7 @@ h2.temperature {
 }
 
 .temperature {
-  text-shadow: 2px 2px 0 black;
+  text-shadow: 1px 1px 0 black;
   text-align: center;
 }
 
@@ -224,6 +257,7 @@ h2.temperature {
 
 .hidden.h {
   opacity: 1;
+  -webkit-transition: opacity 4s;
   transition: opacity 4s;
 } 
 .hidden {
@@ -253,7 +287,6 @@ h2.temperature {
 .changeday > .input-group-btn >.btn:focus{
   outline: none;
 }
-
 
 
 

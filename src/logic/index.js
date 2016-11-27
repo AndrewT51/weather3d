@@ -35,38 +35,38 @@ var logic = {
         
     },
 
-    autoLocate: function autoLocate(data){
-        console.log(data)
-    },
+    // autoLocate: function autoLocate(data){
+    //     console.log(data)
+    // },
 
-    forecastData: function forecastData(data){
-        console.log('Data:', data)
-    },
+    // forecastData: function forecastData(data){
+    //     console.log('Data:', data)
+    // },
 
-    get10dayForecast: function get10dayForecast(location){
-        var url = Constants.urls.forecast10day(location)
-        // console.log('URL: ', url)
-        logic.jsonp(url, 'callback', logic.forecastData )
-    },
+    // get10dayForecast: function get10dayForecast(location){
+    //     var url = Constants.urls.forecast10day(location)
+    //     // console.log('URL: ', url)
+    //     logic.jsonp(url, 'callback', logic.forecastData )
+    // },
 
-    getStateAcronym: function getStateAcronym(data){
-        var state = data.location.state
-        var location = state + '/' + data.location.city.replace(/ /,'_')
-        logic.get10dayForecast(location)
-    },
+    // getStateAcronym: function getStateAcronym(data){
+    //     var state = data.location.state
+    //     var location = state + '/' + data.location.city.replace(/ /,'_')
+    //     logic.get10dayForecast(location)
+    // },
 
-    formatInput: function formatInput(input){
-        var country;
-        var splitInput = input.split(',');
-        if (splitInput.length > 1){
-            country = splitInput[1].trim().toUpperCase()
-        }
-        var city = splitInput[0].trim();
-        return {
-            city: city,
-            country: country
-        }
-    }
+    // formatInput: function formatInput(input){
+    //     var country;
+    //     var splitInput = input.split(',');
+    //     if (splitInput.length > 1){
+    //         country = splitInput[1].trim().toUpperCase()
+    //     }
+    //     var city = splitInput[0].trim();
+    //     return {
+    //         city: city,
+    //         country: country
+    //     }
+    // }
 
 
 }
