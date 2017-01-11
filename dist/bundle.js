@@ -19987,6 +19987,11 @@
 	      value: evt.target.value
 	    });
 	  },
+	  handleEnter: function handleEnter(evt) {
+	    if (evt.key === 'Enter') {
+	      this.handleClick();
+	    }
+	  },
 	  handleClick: function handleClick(evt) {
 	    var jsonp = this.props.jsonp,
 	        userInput = this.props.format(this.state.value),
@@ -20025,6 +20030,7 @@
 	        type: 'text',
 	        value: this.state.value,
 	        onChange: this.handleChange,
+	        onKeyPress: this.handleEnter,
 	        className: 'form-control',
 	        placeholder: 'Current location'
 	      })
@@ -20166,6 +20172,7 @@
 	    }
 	    var high = this.props.weather && this.props.weather.high && this.props.weather.high[unit] || '';
 	    var low = this.props.weather && this.props.weather.low && this.props.weather.low[unit] || '';
+	    console.log(this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/').replace(/http/, 'https'));
 	    var bgImage = this.props.weather && this.props.weather.icon_url.replace(/com\/i\/c\/\w\//, 'com/i/c/e/').replace(/http/, 'https') || 'https://icons.wxug.com/i/c/e/chancerain.gif';
 	    return React.createElement(
 	      'div',

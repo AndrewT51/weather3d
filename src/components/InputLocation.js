@@ -27,6 +27,11 @@ var InputLocation = React.createClass({
       value: evt.target.value
     })
   },
+  handleEnter: function(evt){
+    if(evt.key === 'Enter'){
+      this.handleClick()
+    }
+  },
   handleClick: function(evt){
     var jsonp = this.props.jsonp,
         userInput = this.props.format(this.state.value),
@@ -43,7 +48,7 @@ var InputLocation = React.createClass({
           <span className="input-group-btn">
             <button 
               className="btn btn-secondary" 
-              onClick={this.handleClick} 
+              onClick={this.handleClick}
               type="button">
               Get forecast
             </button>
@@ -58,6 +63,7 @@ var InputLocation = React.createClass({
             type="text" 
             value={this.state.value} 
             onChange={this.handleChange} 
+            onKeyPress={this.handleEnter}
             className="form-control" 
             placeholder="Current location" 
           />
